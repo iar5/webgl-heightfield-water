@@ -2,10 +2,11 @@ import * as twgl from './lib/twgl/twgl.js'
 import * as Vec3 from './lib/twgl/v3.js'
 import * as Mat4 from './lib/twgl/m4.js'
 import Stats from './lib/stats.module.js'
-import { point_vs, point_fs } from './shader/point.js'
+import { checker_vs, checker_fs } from './shader/checker.js'
 import { diffus_vs, diffus_fs } from './shader/diffus.js'
-import { simulation } from './simulation.js'
-import { degToRad, setupMouseControl } from './utils.js'
+import { water_vs, water_fs } from './shader/water.js'
+import { simulation } from './simulators/simpleSimulation.js'
+import { degToRad, setupMouseControl, makeTriangleStripIndices, makeUniformGrid } from './utils.js'
 
 
 
@@ -30,10 +31,11 @@ gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 gl.enable(gl.BLEND)
 gl.enable(gl.DEPTH_TEST)
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
-gl.getExtension('OES_element_index_uint') // already enabled in chrome but yes
+gl.getExtension('OES_element_index_uint') // to use bigger indice arrays, already enabled in chrome but for older versions
 
-const pointProgram = twgl.createProgramInfo(gl, [point_vs, point_fs])
 const diffusProgram = twgl.createProgramInfo(gl, [diffus_vs, diffus_fs])
+const checkerProgram = twgl.createProgramInfo(gl, [checker_vs, checker_fs])
+const waterProgram = twgl.createProgramInfo(gl, [water_vs, water_fs])
 
 
 
@@ -47,12 +49,18 @@ var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight
 var near = 0.001
 var far = 100
 const projection = Mat4.perspective(fov, aspect, near, far)
+
+window.addEventListener("resize", e => {
+    gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight)
+    twgl.resizeCanvasToDisplaySize(canvas)
+    aspect = canvas.clientWidth / canvas.clientHeight    
+    Mat4.perspective(fov, aspect, near, far, projection)
+})
+
 const camera = Mat4.identity() 
 Mat4.translate(camera, [0, 1.75, 6], camera)
-Mat4.rotateX(camera, degToRad(-10), camera)
+Mat4.rotateX(camera, degToRad(-12), camera)
 setupMouseControl(camera)
-
-const modelMat = Mat4.identity()
 
 const lightUniforms = {
     ambient: [0.3, 0.3, 0.3],
@@ -65,31 +73,62 @@ const globalUniforms = {
     u_view: Mat4.inverse(camera),
 } 
 
+const sceneUniforms = {
+    u_cameraPosition: Vec3.create(), // TODO theoretisch über view matrix
+}
 
 
 
 //////////////////
-// SURFACE DATA //
+//BOTTOM TEXTURE//
 //////////////////
 
-const widthX = 80
-const widthZ = 80
-const scale = 0.05
+const bottomPlaneBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+    indices: { numComponents: 3, data: [ // setting indices makes twgl to call drawElements
+        0, 1, 2, 
+        3, 2, 1
+    ]},
+    a_position: { numComponents: 3, data: [
+        -1, 0, 1,
+        1, 0, 1,
+        -1, 0, -1,
+        1, 0, -1
+    ]},
+    a_normal: { numComponents: 3, data: [
+        0, 1, 0,
+        0, 1, 0,
+        0, 1, 0,
+        0, 1, 0
+    ]},
+})
+const bottomPlaneModelMat = Mat4.identity()
+Mat4.scale(bottomPlaneModelMat, [2.5, 1, 2], bottomPlaneModelMat)
+Mat4.translate(bottomPlaneModelMat, [0, -0.5, 0], bottomPlaneModelMat)
 
-const vertices = []
-const indices = [] 
-make_plane(widthX, widthZ, vertices, indices, scale)
 
-const vertexTriangles = make_triangles(indices) // VertexId: Array<TriagleId>
+
+
+//////////////////
+// WATER SURFACE//
+//////////////////
+
+const widthX = 51 // 51 elemten = damit von 0 bis einschließlich 50 geht
+const widthZ = 41
+const scale = 0.1
+
+const vertices = makeUniformGrid(widthX, widthZ, scale)
+const indices = makeTriangleStripIndices(widthX, widthZ)
+const vertexTriangles = makeTriangles(indices) // VertexId: Array<TriagleId>
 const triangleNormals = Array.from({length: indices.length}, e => Array(3).fill(0)); // TriagleId: Vec3 TriangleNormal 
 const normals = []
 
 const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
-    indices: { numComponents: 3, data: Uint32Array.from(indices) }, // to make twgl know that it should use gl.UNSIGNED_INT as type for gl.drawElements()
+    indices: { numComponents: 3, data: Uint32Array.from(indices) }, // to make twgl know that it should use gl.UNSIGNED_INT as type for gl.drawElements(). results in waterBufferInfo.elementType => gl.UNSIGNED_INT
     a_position: { numComponents: 3, data: vertices },
     a_normal: { numComponents: 3, data: normals },
 })
-waterBufferInfo.elementType = gl.UNSIGNED_INT // TODO notwendig oder vergessen wegzumachen?
+
+const waterModelMat = Mat4.identity()
 
 
 
@@ -99,81 +138,62 @@ waterBufferInfo.elementType = gl.UNSIGNED_INT // TODO notwendig oder vergessen w
 //////////////////
 
 simulation.initialize(widthX, widthZ)
-requestAnimationFrame(render)
+requestAnimationFrame(update)
 
-function render() {
-    requestAnimationFrame(render)
+function update() {
+    requestAnimationFrame(update)
     stats.begin()
-    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-    Mat4.inverse(camera, globalUniforms.u_view)
 
-    let heightmap = simulation.update()    
+    Mat4.inverse(camera, globalUniforms.u_view)
+    Mat4.getTranslation(camera, sceneUniforms.u_cameraPosition)
+
+    let heightmap = simulation.update()  
     for(let i=0; i<vertices.length/3; i++){
         let x = i % widthX
         let y = Math.floor(i/widthX)
         vertices[i*3+1] = heightmap[x][y]
     }
-
-    //vertices[i+1] = noise(vertices[i]*0.5, Date.now()/10000, vertices[i+2]*0.5)
     twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_position, vertices);
 
     updateTriangleNormals()
     updateVertexNormals()
     twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_normal, normals);
     
-    gl.useProgram(diffusProgram.program) 
-    twgl.setUniforms(diffusProgram, globalUniforms)
-    twgl.setUniforms(diffusProgram, lightUniforms)
-    twgl.setUniforms(diffusProgram, { u_model: modelMat })
-    twgl.setBuffersAndAttributes(gl, diffusProgram, waterBufferInfo)
-    twgl.drawBufferInfo(gl, waterBufferInfo, gl.TRIANGLE_STRIP) // calls drawElements
-    stats.end()
+   render()
+
+   stats.end()
+}
+
+function render() {
+    gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+
+    gl.useProgram(waterProgram.program) 
+    twgl.setUniforms(waterProgram, globalUniforms)
+    twgl.setUniforms(waterProgram, lightUniforms)
+    twgl.setUniforms(waterProgram, sceneUniforms)
+    twgl.setUniforms(waterProgram, { u_model: waterModelMat })
+    twgl.setBuffersAndAttributes(gl, waterProgram, waterBufferInfo)
+    twgl.drawBufferInfo(gl, waterBufferInfo, gl.TRIANGLE_STRIP)
+
+    gl.useProgram(checkerProgram.program) 
+    twgl.setUniforms(checkerProgram, globalUniforms)
+    twgl.setUniforms(checkerProgram, lightUniforms)
+    twgl.setUniforms(checkerProgram, sceneUniforms)
+    twgl.setUniforms(checkerProgram, { u_model: bottomPlaneModelMat })
+    twgl.setBuffersAndAttributes(gl, checkerProgram, bottomPlaneBufferInfo)
+    twgl.drawBufferInfo(gl, bottomPlaneBufferInfo, gl.TRIANGLES) 
 }
 
 
 
 
 
-/**
- * from https://stackoverflow.com/a/5917700/7764088
- * strip explanation http://www.corehtml5.com/trianglestripfundamentals.php
- * vertices order: 
- *      456      
- *      123
- * TODO so umschreiben, dass gl_FrontFacing detected werden kann (zeigt momentan in die falsche richtung)
- * @param {Number} width 
- * @param {Number} depth 
- * @param {Array*} vertices 
- * @param {Number} scale
- */
-function make_plane(width, depth, vertices, indices, scale) {
-    // Set up vertices
-    for (let y = 0; y<depth; ++y) {
-        for (let x = 0; x<width; ++x) {
-            vertices.push(
-                (x-width/2+0.5)*scale,  
-                0,
-                (y-depth/2+0.5)*scale
-            )
-        }
-    }
-    // Set up indices
-    let i = 0;
-    for (let x = 0; x<width - 1; ++x) {
-        indices[i++] = x * depth
-        for (let y = 0; y < depth; ++y) {
-            indices[i++] = x*depth + y
-            indices[i++] = (x+1) * depth + y
-        }
-        indices[i++] = (x+1) * depth + (depth-1)
-    }
-}
  
 /** 
  * triangles[vertex id] = Array<triangle id aller adjazenten Dreiecke>
  * @returns {Array} 
  */
-function make_triangles(){
+export function makeTriangles(){
     const triangles = []
 
     // fill with empty arrays
@@ -213,8 +233,10 @@ function updateTriangleNormals(){
             let v31 = Vec3.subtract(v3, v1)
             let n = Vec3.cross(v21, v31)
             
-            // bc of triangle strip the triangles are not equally arranged in termes of clockwise/counterclockwise so it has to be tackled in normal calculation
-            if(i%2==0) Vec3.mulScalar(n, -1, n)
+            // in triangle strip the triangles are not equally arranged in termes of clockwise/counterclockwise 
+            // every second triangle need to get flipped
+            // not sure if my implementation is conventional correct but its uniform and worming
+            if(i%2==1) Vec3.mulScalar(n, -1, n)
 
             Vec3.normalize(n, n)
             Vec3.copy(n, triangleNormals[i]) 
@@ -250,15 +272,6 @@ function isTriangle(vId1, vId2, vId3){
     return vId1!=vId2 && vId1!=vId3 && vId2!=vId3
 }
 
-/**
- * Window resize handling
- */
-window.addEventListener("resize", e => {
-    gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight)
-    twgl.resizeCanvasToDisplaySize(canvas)
-    aspect = canvas.clientWidth / canvas.clientHeight    
-    Mat4.perspective(fov, aspect, near, far, projection)
-})
 
 
 

@@ -5,6 +5,7 @@ export const diffus_vs =
     uniform mat4 u_model;
     uniform mat4 u_view;
     uniform mat4 u_projection;
+    uniform vec4 u_color;
 
     attribute vec3 a_position;
     attribute vec3 a_normal;
@@ -14,15 +15,10 @@ export const diffus_vs =
     varying vec4 v_color;
 
     void main() {
-        v_color = vec4(0, 0, 1, 1);
-
-        // TODO Normalmatrix für wenn model skaliert oder rotiert wird
-        v_normal = a_normal;
-
-        v_position = vec4(a_position, 1.0);
-        v_position = u_model * v_position;
-       
-        gl_Position = u_projection * u_view * u_model * v_position; // so ist korrekt
+        v_color = u_color;
+        v_normal = a_normal; // TODO Normalmatrix für wenn model skaliert oder rotiert wird
+        v_position = u_model * vec4(a_position, 1.0);
+        gl_Position = u_projection * u_view * v_position; // so ist korrekt mit v_position = model * position
     }
 `
 
@@ -47,6 +43,5 @@ export const diffus_fs =
         vec3 lightIntensity = ambient + sunColor * max(dot(v_normal, normSunDir), 0.0);
         
         gl_FragColor = vec4(v_color.rgb * lightIntensity, v_color.a);
-        //gl_FragColor = vec4(v_normal, 1.0);
     }
 `

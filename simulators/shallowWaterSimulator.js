@@ -1,25 +1,13 @@
-import * as Vec3 from './lib/twgl/v3.js'
-import * as Mat4 from './lib/twgl/m4.js'
-import { noise } from './noise.js'
+import * as Vec3 from '../lib/twgl/v3.js'
+import * as Mat4 from '../lib/twgl/m4.js'
 
-const h = 0.1 // column width
-const t = 0.1 // timestep <h/c
-const c = 1 // wave travel speed <h/t
-
-var widthX
-var widthZ
 
 var u
-var unew
-var v
 
 function initialize(_widthX, _widthZ){
     widthX = _widthX
     widthZ = _widthZ
     u = [...Array(widthX)].map(e => Array(widthZ).fill(0));
-    unew = [...Array(widthX)].map(e => Array(widthZ).fill(0));
-    v = [...Array(widthX)].map(e => Array(widthZ).fill(0))
-
 
     for(let i=0; i<widthX; i++){
         for(let j=0; j<widthZ; j++){
@@ -37,19 +25,18 @@ function update(){
             v[i][j] = v[i][j] + f*t
             unew[i][j] = u[i][j] + v[i][j]*t 
         }    
-    }
-
-    for(let i=0; i<widthX; i++){
-        for(let j=0; j<widthZ; j++){        
-            u[i][j] = unew[i][j] * 0.9999
-        }
-    }         
+    }      
     return u
 }
 
+
+
+/**
+ * PUBLIC FUNCTIONS
+ */
 export const simulation = (function(){
     return{
         initialize,
-        update 
+        update,
     }
 })()
