@@ -24,6 +24,7 @@ document.body.appendChild(stats.dom)
 //  SETUP WEBGL //
 //////////////////
 
+var paused = false
 const canvas = document.getElementById("canvas")
 const gl = canvas.getContext("webgl2")
 twgl.resizeCanvasToDisplaySize(gl.canvas)
@@ -102,7 +103,7 @@ const bottomPlaneBufferInfo = twgl.createBufferInfoFromArrays(gl, {
     ]},
 })
 const bottomPlaneModelMat = Mat4.identity()
-Mat4.scale(bottomPlaneModelMat, [2.5, 1, 2], bottomPlaneModelMat)
+Mat4.scale(bottomPlaneModelMat, [2, 1, 2], bottomPlaneModelMat)
 Mat4.translate(bottomPlaneModelMat, [0, -0.5, 0], bottomPlaneModelMat)
 
 
@@ -140,13 +141,21 @@ const waterModelMat = Mat4.identity()
 simulation.initialize(widthX, widthZ)
 requestAnimationFrame(update)
 
-function update() {
+function update(){
     requestAnimationFrame(update)
     stats.begin()
+    updateCamera()
+    if(!paused) updateSimulation()
+    render()
+    stats.end()
+}
 
+function updateCamera() {
     Mat4.inverse(camera, globalUniforms.u_view)
     Mat4.getTranslation(camera, sceneUniforms.u_cameraPosition)
+}
 
+function updateSimulation() {
     let heightmap = simulation.update()  
     for(let i=0; i<vertices.length/3; i++){
         let x = i % widthX
@@ -158,10 +167,6 @@ function update() {
     updateTriangleNormals()
     updateVertexNormals()
     twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_normal, normals);
-    
-   render()
-
-   stats.end()
 }
 
 function render() {
@@ -184,7 +189,10 @@ function render() {
     twgl.drawBufferInfo(gl, bottomPlaneBufferInfo, gl.TRIANGLES) 
 }
 
-
+window.addEventListener('keydown', e => {
+    if(e.keyCode == 32)
+        paused = !paused
+})
 
 
 
