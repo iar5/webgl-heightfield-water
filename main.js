@@ -2,11 +2,10 @@ import * as twgl from './lib/twgl/twgl.js'
 import * as Vec3 from './lib/twgl/v3.js'
 import * as Mat4 from './lib/twgl/m4.js'
 import Stats from './lib/stats.module.js'
-import { checker_vs, checker_fs } from './shader/checker.js'
-import { diffus_vs, diffus_fs } from './shader/diffus.js'
+import { bottom_vs, bottom_fs } from './shader/bottom.js'
 import { water_vs, water_fs } from './shader/water.js'
 import { simulation } from './simulators/simpleSimulation.js'
-import { degToRad, setupMouseControl, makeTriangleStripIndices, makeUniformGrid } from './utils.js'
+import { degToRad, setupMouseControl, makeTriangleStripIndices, makeUniformGrid, loadImage } from './utils.js'
 
 
 
@@ -34,8 +33,7 @@ gl.enable(gl.DEPTH_TEST)
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 gl.getExtension('OES_element_index_uint') // to use bigger indice arrays, already enabled in chrome but for older versions
 
-const diffusProgram = twgl.createProgramInfo(gl, [diffus_vs, diffus_fs])
-const checkerProgram = twgl.createProgramInfo(gl, [checker_vs, checker_fs])
+const bottomProgram = twgl.createProgramInfo(gl, [bottom_vs, bottom_fs])
 const waterProgram = twgl.createProgramInfo(gl, [water_vs, water_fs])
 
 
@@ -72,19 +70,19 @@ const lightUniforms = {
 const globalUniforms = {
     u_projection: projection,
     u_view: Mat4.inverse(camera),
-} 
-
-const sceneUniforms = {
     u_cameraPosition: Vec3.create(), // TODO theoretisch über view matrix
-}
-
+} 
 
 
 //////////////////
 //BOTTOM TEXTURE//
 //////////////////
+const bottomModelMat = Mat4.identity()
+Mat4.scale(bottomModelMat, [2, 1, 2], bottomModelMat)
+Mat4.translate(bottomModelMat, [0, -0.5, 0], bottomModelMat)
+const bottomTexture = twgl.createTexture(gl, { src: "assets/tiles.jpg" })
 
-const bottomPlaneBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+const bottomBufferInfo = twgl.createBufferInfoFromArrays(gl, {
     indices: { numComponents: 3, data: [ // setting indices makes twgl to call drawElements
         0, 1, 2, 
         3, 2, 1
@@ -101,19 +99,25 @@ const bottomPlaneBufferInfo = twgl.createBufferInfoFromArrays(gl, {
         0, 1, 0,
         0, 1, 0
     ]},
+    a_texcoord: { numComponents: 2, data: [
+        0, 1,
+        1, 1,
+        0, 0,
+        1, 0,
+    ]},
 })
-const bottomPlaneModelMat = Mat4.identity()
-Mat4.scale(bottomPlaneModelMat, [2, 1, 2], bottomPlaneModelMat)
-Mat4.translate(bottomPlaneModelMat, [0, -0.5, 0], bottomPlaneModelMat)
-
-
+const bottomUniforms = {
+    u_model: bottomModelMat,
+    u_texture: bottomTexture
+}
 
 
 //////////////////
 // WATER SURFACE//
 //////////////////
+const waterModelMat = Mat4.identity()
 
-const widthX = 51 // 51 elemten = damit von 0 bis einschließlich 50 geht
+const widthX = 51 // 51 elemten = damit von 0 bis einschließlich 50 geht // TODO warum geht 41 net amk
 const widthZ = 41
 const scale = 0.1
 
@@ -128,8 +132,11 @@ const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
     a_position: { numComponents: 3, data: vertices },
     a_normal: { numComponents: 3, data: normals },
 })
-
-const waterModelMat = Mat4.identity()
+const waterUniforms = { 
+    u_model: waterModelMat ,
+    u_bottomModelMat: bottomModelMat,
+    u_bottomTexture: bottomTexture
+}
 
 
 
@@ -138,8 +145,12 @@ const waterModelMat = Mat4.identity()
 // START MAIN LOOP
 //////////////////
 
-simulation.initialize(widthX, widthZ)
-requestAnimationFrame(update)
+start()
+
+function start(){
+    simulation.initialize(widthX, widthZ)
+    requestAnimationFrame(update)
+}
 
 function update(){
     requestAnimationFrame(update)
@@ -152,7 +163,7 @@ function update(){
 
 function updateCamera() {
     Mat4.inverse(camera, globalUniforms.u_view)
-    Mat4.getTranslation(camera, sceneUniforms.u_cameraPosition)
+    Mat4.getTranslation(camera, globalUniforms.u_cameraPosition)
 }
 
 function updateSimulation() {
@@ -171,22 +182,20 @@ function updateSimulation() {
 
 function render() {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
-
+    
     gl.useProgram(waterProgram.program) 
     twgl.setUniforms(waterProgram, globalUniforms)
     twgl.setUniforms(waterProgram, lightUniforms)
-    twgl.setUniforms(waterProgram, sceneUniforms)
-    twgl.setUniforms(waterProgram, { u_model: waterModelMat })
+    twgl.setUniforms(waterProgram, waterUniforms)
     twgl.setBuffersAndAttributes(gl, waterProgram, waterBufferInfo)
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.TRIANGLE_STRIP)
 
-    gl.useProgram(checkerProgram.program) 
-    twgl.setUniforms(checkerProgram, globalUniforms)
-    twgl.setUniforms(checkerProgram, lightUniforms)
-    twgl.setUniforms(checkerProgram, sceneUniforms)
-    twgl.setUniforms(checkerProgram, { u_model: bottomPlaneModelMat })
-    twgl.setBuffersAndAttributes(gl, checkerProgram, bottomPlaneBufferInfo)
-    twgl.drawBufferInfo(gl, bottomPlaneBufferInfo, gl.TRIANGLES) 
+    gl.useProgram(bottomProgram.program) 
+    twgl.setUniforms(bottomProgram, globalUniforms)
+    twgl.setUniforms(bottomProgram, lightUniforms)
+    twgl.setUniforms(bottomProgram, bottomUniforms)
+    twgl.setBuffersAndAttributes(gl, bottomProgram, bottomBufferInfo)
+    twgl.drawBufferInfo(gl, bottomBufferInfo, gl.TRIANGLES) 
 }
 
 window.addEventListener('keydown', e => {

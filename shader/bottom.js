@@ -1,4 +1,4 @@
-export const checker_vs = 
+export const bottom_vs = 
 `
     precision highp float;
 
@@ -8,38 +8,32 @@ export const checker_vs =
 
     attribute vec3 a_position;
     attribute vec3 a_normal;
-    
+    attribute vec2 a_texcoord;
+
     varying vec4 v_position;
     varying vec3 v_normal;
+    varying vec2 v_texcoord;
 
     void main() {
-        v_normal = a_normal; 
         v_position = u_model * vec4(a_position, 1.0);
+        v_normal = a_normal; 
+        v_texcoord = a_texcoord;
+
         gl_Position = u_projection * u_view * v_position; 
     }
 `
 
-export const checker_fs = 
+export const bottom_fs = 
 `
     precision highp float;
 
     varying vec4 v_position;
     varying vec3 v_normal;
+    varying vec2 v_texcoord;
 
-    uniform vec3 ambient;
-    uniform vec3 sunPosition;
-    uniform	vec3 sunColor;
-
+    uniform sampler2D u_texture;
 
     void main() {
-        float c = (v_position.x + v_position.z) * 10.0;
-        bool isEven = mod(c, 2.0) >= 1.0;
-
-        if(isEven) {
-            gl_FragColor = vec4(0, 0, 0, 1);
-        }
-        else {           
-            gl_FragColor = vec4(0.9, 0.9, 0.9, 1);
-        }
+        gl_FragColor = texture2D(u_texture, v_texcoord);
     }
 `

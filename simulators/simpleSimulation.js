@@ -4,7 +4,7 @@ import * as Mat4 from '../lib/twgl/m4.js'
 const h = 0.1 // column width
 const c = 0.15 // wave travel speed <h/t
 const t = 0.1 // timestep <h/c
-const slowdown = 0.999
+const slowdown = 0.99
 
 var widthX
 var widthZ

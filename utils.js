@@ -90,3 +90,9 @@ export function setupMouseControl(camera){
         Mat4.multiply(newRotationMatrix, camera, camera)
     }
 }
+
+export function loadImage(src, callback){
+    image = new Image();
+    image.onload = function() {callback(image)}
+    image.src = src
+}
