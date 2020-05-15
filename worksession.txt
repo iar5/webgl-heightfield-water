@@ -1,2 +1,6 @@
-boden textur geben
-textur auch in watershader in refraction macrhn
+Pool 
+- idk wie cubemap
+- immer gleicheh texture nehmen, oben sit ja leer
+
+mehrere rechtecke
+- nachteil: brauch matrix fürmalen wegen rotation

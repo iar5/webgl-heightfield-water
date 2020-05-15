@@ -2,23 +2,29 @@ import * as Vec3 from './lib/twgl/v3.js'
 import * as Mat4 from './lib/twgl/m4.js'
 
 /**
+ * Erstellt ein Grid der Breite 1x1
  * vertices order:   
  *  4 5 6      
  *  1 2 3
  * TODO so umschreiben, dass gl_FrontFacing detected werden kann (zeigt momentan in die falsche richtung) oder zeichne ich dreiecke einfach wieder falschrum?
- * @param {Number} width 
- * @param {Number} depth 
- * @param {Array*} vertices 
- * @param {Number} scale
+ * @param {Number} verticesX 
+ * @param {Number} verticesZ 
+
  */
-export function makeUniformGrid(width, depth, scale) {
-    let result = []
-    for (let y = 0; y<depth; y++) {
-        for (let x = 0; x<width; x++) {
+export function makeUniformGrid(verticesX, verticesZ) {
+    const result = []
+    const widthX = 1
+    const widthZ = 1
+    const scaleX = widthX/(verticesX-1)
+    const scaleZ = widthZ/(verticesZ-1)
+    const offsetX = (verticesX-1)/2
+    const offsetZ = (verticesZ-1)/2
+    for (let z = 0; z<verticesZ; z++) {
+        for (let x = 0; x<verticesX; x++) {
             result.push(
-                (x-width/2+0.5)*scale,  
-                0,
-                (y-depth/2+0.5)*scale
+                (x-offsetX) * scaleX, 
+                0, 
+                (z-offsetZ) * scaleZ
             )
         }
     }
@@ -85,7 +91,7 @@ export function setupMouseControl(camera){
         lastMouseX = newX
         lastMouseY = newY
         let newRotationMatrix = Mat4.identity()
-        //Mat4.rotateX(newRotationMatrix, -degToRad(deltaY / 5), newRotationMatrix)
+        Mat4.rotateX(newRotationMatrix, -degToRad(deltaY / 5), newRotationMatrix)
         Mat4.rotateY(newRotationMatrix, -degToRad(deltaX / 5), newRotationMatrix)
         Mat4.multiply(newRotationMatrix, camera, camera)
     }

@@ -2,7 +2,8 @@ import * as twgl from './lib/twgl/twgl.js'
 import * as Vec3 from './lib/twgl/v3.js'
 import * as Mat4 from './lib/twgl/m4.js'
 import Stats from './lib/stats.module.js'
-import { bottom_vs, bottom_fs } from './shader/bottom.js'
+import { rectangle_vs, rectangle_fs } from './shader/rectangle.js'
+import { pool_vs, pool_fs } from './shader/pool.js'
 import { water_vs, water_fs } from './shader/water.js'
 import { simulation } from './simulators/simpleSimulation.js'
 import { degToRad, setupMouseControl, makeTriangleStripIndices, makeUniformGrid, loadImage } from './utils.js'
@@ -33,7 +34,7 @@ gl.enable(gl.DEPTH_TEST)
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 gl.getExtension('OES_element_index_uint') // to use bigger indice arrays, already enabled in chrome but for older versions
 
-const bottomProgram = twgl.createProgramInfo(gl, [bottom_vs, bottom_fs])
+const poolProgram = twgl.createProgramInfo(gl, [pool_vs, pool_fs])
 const waterProgram = twgl.createProgramInfo(gl, [water_vs, water_fs])
 
 
@@ -57,8 +58,8 @@ window.addEventListener("resize", e => {
 })
 
 const camera = Mat4.identity() 
-Mat4.translate(camera, [0, 1.75, 6], camera)
-Mat4.rotateX(camera, degToRad(-12), camera)
+Mat4.translate(camera, [0, 1.5, 4], camera)
+Mat4.rotateX(camera, degToRad(-15), camera)
 setupMouseControl(camera)
 
 const lightUniforms = {
@@ -74,16 +75,49 @@ const globalUniforms = {
 } 
 
 
-//////////////////
-//BOTTOM TEXTURE//
-//////////////////
-const bottomModelMat = Mat4.identity()
-Mat4.scale(bottomModelMat, [2, 1, 2], bottomModelMat)
-Mat4.translate(bottomModelMat, [0, -0.5, 0], bottomModelMat)
-const bottomTexture = twgl.createTexture(gl, { src: "assets/tiles.jpg" })
 
-const bottomBufferInfo = twgl.createBufferInfoFromArrays(gl, {
-    indices: { numComponents: 3, data: [ // setting indices makes twgl to call drawElements
+//////////////////
+//   TEXTURES   //
+//////////////////
+
+const colorTexture = twgl.createTexture(gl, { src: [255,0,0,255] })
+const tilesTexture = twgl.createTexture(gl, { src: "assets/tiles.jpg" })
+
+const cubeMap2 = twgl.createTexture(gl, {
+    target: gl.TEXTURE_CUBE_MAP,
+    src: [
+        'assets/xpos.jpg',
+        'assets/xneg.jpg',
+        'assets/ypos.jpg',
+        'assets/yneg.jpg', // gibts nicht?
+        'assets/zpos.jpg',
+        'assets/zneg.jpg',
+      ],
+})
+const cubeMap = twgl.createTexture(gl, {
+    target: gl.TEXTURE_CUBE_MAP,
+    src: [
+        "assets/tiles.jpg",
+        "assets/tiles.jpg",
+        "assets/tiles.jpg",
+        "assets/tiles.jpg",
+        "assets/tiles.jpg",
+        "assets/tiles.jpg"
+      ],
+})
+
+
+
+
+//////////////////
+//    POOL      //
+//////////////////
+const poolModelMat = Mat4.identity()
+Mat4.scale(poolModelMat, [1, 1, 1], poolModelMat)
+Mat4.translate(poolModelMat, [0, -.5, 0], poolModelMat) 
+
+const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
+    indices: { numComponents: 3, data: [ // setting indices makes twgl call drawElements
         0, 1, 2, 
         3, 2, 1
     ]},
@@ -106,23 +140,22 @@ const bottomBufferInfo = twgl.createBufferInfoFromArrays(gl, {
         1, 0,
     ]},
 })
-const bottomUniforms = {
-    u_model: bottomModelMat,
-    u_texture: bottomTexture
+const poolUniforms = {
+    u_model: poolModelMat,
+    u_texture: tilesTexture
 }
 
 
 //////////////////
-// WATER SURFACE//
+//     WATER    //
 //////////////////
-const waterModelMat = Mat4.identity()
+const waterModelMat = Mat4.identity() // benutzen anstatt width
+Mat4.scale(waterModelMat, [2, 1, 2], waterModelMat)
 
-const widthX = 51 // 51 elemten = damit von 0 bis einschließlich 50 geht // TODO warum geht 41 net amk
-const widthZ = 41
-const scale = 0.1
-
-const vertices = makeUniformGrid(widthX, widthZ, scale)
-const indices = makeTriangleStripIndices(widthX, widthZ)
+const verticesX = 50 // TODO warum geht 40x40 nicht
+const verticesZ = 40
+const vertices = makeUniformGrid(verticesX, verticesZ)
+const indices = makeTriangleStripIndices(verticesX, verticesZ)
 const vertexTriangles = makeTriangles(indices) // VertexId: Array<TriagleId>
 const triangleNormals = Array.from({length: indices.length}, e => Array(3).fill(0)); // TriagleId: Vec3 TriangleNormal 
 const normals = []
@@ -133,9 +166,9 @@ const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
     a_normal: { numComponents: 3, data: normals },
 })
 const waterUniforms = { 
-    u_model: waterModelMat ,
-    u_bottomModelMat: bottomModelMat,
-    u_bottomTexture: bottomTexture
+    u_model: waterModelMat,
+    u_bottomModelMat: poolModelMat, // adjust
+    u_cubeMap: cubeMap
 }
 
 
@@ -148,7 +181,7 @@ const waterUniforms = {
 start()
 
 function start(){
-    simulation.initialize(widthX, widthZ)
+    simulation.initialize(verticesX, verticesZ)
     requestAnimationFrame(update)
 }
 
@@ -169,8 +202,8 @@ function updateCamera() {
 function updateSimulation() {
     let heightmap = simulation.update()  
     for(let i=0; i<vertices.length/3; i++){
-        let x = i % widthX
-        let y = Math.floor(i/widthX)
+        let x = i % verticesX
+        let y = Math.floor(i/verticesX)
         vertices[i*3+1] = heightmap[x][y]
     }
     twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_position, vertices);
@@ -190,12 +223,12 @@ function render() {
     twgl.setBuffersAndAttributes(gl, waterProgram, waterBufferInfo)
     twgl.drawBufferInfo(gl, waterBufferInfo, gl.TRIANGLE_STRIP)
 
-    gl.useProgram(bottomProgram.program) 
-    twgl.setUniforms(bottomProgram, globalUniforms)
-    twgl.setUniforms(bottomProgram, lightUniforms)
-    twgl.setUniforms(bottomProgram, bottomUniforms)
-    twgl.setBuffersAndAttributes(gl, bottomProgram, bottomBufferInfo)
-    twgl.drawBufferInfo(gl, bottomBufferInfo, gl.TRIANGLES) 
+    gl.useProgram(poolProgram.program) 
+    twgl.setUniforms(poolProgram, globalUniforms)
+    twgl.setUniforms(poolProgram, lightUniforms)
+    twgl.setUniforms(poolProgram, poolUniforms)
+    twgl.setBuffersAndAttributes(gl, poolProgram, poolBufferInfo)
+    twgl.drawBufferInfo(gl, poolBufferInfo, gl.TRIANGLES) 
 }
 
 window.addEventListener('keydown', e => {
@@ -210,7 +243,7 @@ window.addEventListener('keydown', e => {
  * triangles[vertex id] = Array<triangle id aller adjazenten Dreiecke>
  * @returns {Array} 
  */
-export function makeTriangles(){
+function makeTriangles(indices){
     const triangles = []
 
     // fill with empty arrays

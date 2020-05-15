@@ -1,7 +1,4 @@
-/**
- * water shader with reflektion/refraction based on a cubemap
- */
- export const water_vs = 
+export const water_vs = 
 `
     precision highp float;
 
@@ -32,14 +29,15 @@ export const water_fs =
     varying vec3 v_normal;
 
     uniform vec3 u_cameraPosition;
-    uniform samplerCube u_cubeMap;
+    uniform sampler2D u_bottomTexture;
 
     // bottom sclae + transform über bottomModelMat?
     // später generisch als struc für alle wande mit position
     // parameterfrom?
-    float d = 1.0;
-    float w = 1.0;
-    float l = 1.0;    
+    float d = -0.5;
+    float w = 4.0;
+    float l = 4.0;
+    
 
     vec2 getUVFromRectangle(vec2 hit, float rectWidth, float rectHeight){
         float u = (hit.x + 0.5*rectWidth)/rectWidth;
@@ -58,41 +56,45 @@ export const water_fs =
     float intersectRayPlane(vec3 origin, vec3 ray, vec3 n, float d){
         float t = (d - dot(n, origin)) / dot(n, ray);
         return t;
-    }  
+    } 
+
+    vec3 refract(vec3 incident, vec3 n){
+        float etai = 1.0;
+        float etat = 1.33; 
+
+        float cosi = clamp(dot(incident, n), -1.0, 1.0); 
+        if (cosi < 0.0) { 
+            cosi = -cosi; 
+        } else { 
+            float temp = etai;
+            etai = etat;
+            etat = temp;
+            n = -n;
+        } 
+        float eta = etai / etat; 
+        float k = 1.0 - eta*eta * (1.0 - cosi*cosi); 
+        return eta*incident + (eta*cosi - sqrt(k))*n;  
+    }
+    
+    vec3 reflect(vec3 ray, vec3 n){
+        return ray - 2.0 * dot(ray, n) * n; 
+    }
 
     void main() {
-        vec3 eyeRay = normalize(v_position.xyz - u_cameraPosition);
+        vec3 ray = normalize(v_position.xyz - u_cameraPosition);
 
-        vec3 refractRay = refract(eyeRay, v_normal, 1.0/1.1);
+        vec3 refractRay = refract(ray, v_normal);
 
-        float t1 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 1, 0), -d);
-        float t2 = intersectRayPlane(v_position.xyz, refractRay, vec3(1, 0, 0), -w);
-        float t3 = intersectRayPlane(v_position.xyz, refractRay, vec3(-1, 0, 0), -w);
-        float t4 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, 1), -l);
-        float t5 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, -1), -l);
-
-        float t = 0.0;
-
-        if(t1 >= 0.0){
-            t = t1;
-        }
-        if (t2 > 0.0 && t2 < t) {
-            t = t2;
-        } 
-        if (t3 > 0.0 && t3 < t) {
-            t = t3;
-        } 
-        if (t4 > 0.0 && t4 < t) {
-            t = t4;
-        }       
-        if (t5 > 0.0 && t5 < t) {
-            t = t5;
-        } 
-
+        float t = intersectRayPlane(v_position.xyz, refractRay, v_normal, d);
         vec3 hit = v_position.xyz + t * refractRay;
-        vec3 mRay = -vec3(hit.x/w, hit.y/d, hit.z/l); 
-        gl_FragColor = textureCube(u_cubeMap, mRay);
-        //gl_FragColor = vec4(v_normal, 1.0);
+        bool intersectBottom = isHitInRectangle(hit.xz, w, l); 
+
+        if(t > 0.0 && intersectBottom){
+            vec2 uv = getUVFromRectangle(hit.xz, w, l);
+            gl_FragColor = texture2D(u_bottomTexture, uv);
+        } else {
+            gl_FragColor = vec4(v_normal, 1.0);
+        }
     }
 
 `
