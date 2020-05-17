@@ -4,3 +4,8 @@ Pool
 
 mehrere rechtecke
 - nachteil: brauch matrix fürmalen wegen rotation
+
+
+
+Wasser mit seitenwänden damit färben kann
+geisrerspalte u

@@ -65,40 +65,52 @@ export function degToRad(degrees) {
 
 
 /**
- * Ganz einfache Maus Kamerarotation
- * TODO um x bzw z rotieren, dass y achse sich nicht verschiebt
- * Was nicht klappt: - Wenn eigene Rotationsmatrix dann wirkt dass wie 3. person, das Achsenproblem bleibt aber bestehen
- *
- * by http://learningwebgl.com/blog/?p=1253
- * working tutorial: http://www.webglacademy.com/courses.php?courses=0_1_20_2_3_4_23_5_6_7_10#4
+ * 
+ * @param {String} src 
+ * @param {Function} callback 
  */
-export function setupMouseControl(camera){
-    var mouseDown
-    var lastMouseX
-    var lastMouseY
-    canvas.onmousedown = function(e) {
-        mouseDown = true
-        lastMouseX = e.clientX
-        lastMouseY = e.clientY
-    }
-    document.onmouseup = function(e) { mouseDown = false }
-    document.onmousemove = function(e) {
-        if (!mouseDown) return
-        let newX = e.clientX
-        let newY = e.clientY
-        let deltaX = newX - lastMouseX
-        let deltaY = newY - lastMouseY
-        lastMouseX = newX
-        lastMouseY = newY
-        let newRotationMatrix = Mat4.identity()
-        Mat4.rotateX(newRotationMatrix, -degToRad(deltaY / 5), newRotationMatrix)
-        Mat4.rotateY(newRotationMatrix, -degToRad(deltaX / 5), newRotationMatrix)
-        Mat4.multiply(newRotationMatrix, camera, camera)
-    }
-}
-
 export function loadImage(src, callback){
     image = new Image();
     image.onload = function() {callback(image)}
     image.src = src
+}
+
+
+/**
+ * Simple orbit/arc camera rotating around y-axis on a circle at xz-plane
+ * @param {*} canvas 
+ * @param {*} camera 
+ * @param {*} distance 
+ */
+export function createOrbitCamera(canvas, pos, rx, ry){
+    const camera = Mat4.identity()
+    var mouseDown
+    var lastMouseU
+    var lastMouseV
+    var usum = ry
+    var vsum = rx
+    calc()
+    canvas.onmousedown = function(e) {
+        mouseDown = true
+        lastMouseU = e.clientX
+        lastMouseV = e.clientY
+    }
+    document.onmouseup = function(e) { mouseDown = false }
+    document.onmousemove = function(e) {
+        if (!mouseDown) return
+        let deltaU = e.clientX - lastMouseU
+        let deltaV =  e.clientY - lastMouseV
+        lastMouseU = e.clientX
+        lastMouseV =  e.clientY
+        usum += deltaU
+        vsum += deltaV
+        calc()
+    }
+    function calc(){
+        Mat4.identity(camera)
+        Mat4.rotateY(camera, -degToRad(usum / 5), camera)
+        Mat4.rotateX(camera, -degToRad(vsum / 5), camera)
+        Mat4.translate(camera, pos, camera)
+    }
+    return camera
 }

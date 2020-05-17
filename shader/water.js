@@ -92,6 +92,7 @@ export const water_fs =
         vec3 hit = v_position.xyz + t * refractRay;
         vec3 mRay = -vec3(hit.x/w, hit.y/d, hit.z/l); 
         gl_FragColor = textureCube(u_cubeMap, mRay);
+        gl_FragColor.b = 1.0;
         //gl_FragColor = vec4(v_normal, 1.0);
     }
 

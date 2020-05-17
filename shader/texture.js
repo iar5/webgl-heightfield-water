@@ -1,7 +1,4 @@
-/**
- * simple rectangle with texture
- */
-export const rectangle_vs = 
+export const texture_vs = 
 `
     precision highp float;
 
@@ -26,7 +23,7 @@ export const rectangle_vs =
     }
 `
 
-export const rectangle_fs = 
+export const texture_fs = 
 `
     precision highp float;
 
