@@ -108,8 +108,8 @@ export function createOrbitCamera(canvas, pos, rx, ry){
     }
     function calc(){
         Mat4.identity(camera)
-        Mat4.rotateY(camera, -degToRad(usum / 5), camera)
-        Mat4.rotateX(camera, -degToRad(vsum / 5), camera)
+        Mat4.rotateY(camera, -degToRad(usum / 4), camera)
+        Mat4.rotateX(camera, -degToRad(vsum / 4), camera)
         Mat4.translate(camera, pos, camera)
     }
     return camera

@@ -19,6 +19,9 @@ document.body.appendChild(stats.dom)
 
 
 
+
+
+
 //////////////////
 //  SETUP WEBGL //
 //////////////////
@@ -35,6 +38,51 @@ gl.getExtension('OES_element_index_uint') // to use bigger indice arrays, alread
 const poolProgram = twgl.createProgramInfo(gl, [texture_vs, texture_fs])
 const waterProgram = twgl.createProgramInfo(gl, [water_vs, water_fs])
 
+
+
+
+//////////////////
+//   TEXTURES   //
+//////////////////
+
+const colorTexture = twgl.createTexture(gl, { src: [255,0,0,255] })
+const tilesTexture = twgl.createTexture(gl, { 
+    src: "assets/tiles.jpg" 
+})
+
+const cubeMap = twgl.createTexture(gl, {
+    target: gl.TEXTURE_CUBE_MAP,
+    src: [
+        "assets/tiles.jpg",
+        "assets/tiles.jpg",
+        "assets/tiles.jpg", // y transparent machen?
+        "assets/tiles.jpg",
+        "assets/tiles.jpg",
+        "assets/tiles.jpg"
+      ],
+})
+const cubeMapEnv = twgl.createTexture(gl, {
+    target: gl.TEXTURE_CUBE_MAP,
+    src: [
+        'assets/xpos.jpg',
+        'assets/xneg.jpg',
+        'assets/ypos.jpg',
+        'assets/yneg.jpg', // gibts nicht?
+        'assets/zpos.jpg',
+        'assets/zneg.jpg',
+      ],
+})
+const cubeMapTest = twgl.createTexture(gl, {
+    target: gl.TEXTURE_CUBE_MAP,
+    src: [
+        'assets/test/xpos.png',
+        'assets/test/xneg.png',
+        'assets/test/ypos.png',
+        'assets/test/yneg.png', 
+        'assets/test/zpos.png',
+        'assets/test/zneg.png',
+      ],
+})
 
 
 
@@ -56,8 +104,7 @@ window.addEventListener("resize", e => {
 })
 
 
-const camera = createOrbitCamera(canvas, [0, 0.25, 4], 45, 0)
-
+const camera = createOrbitCamera(canvas, [0, 0, 5], 45, 0)
 
 const lightUniforms = {
     ambient: [0.3, 0.3, 0.3],
@@ -68,42 +115,9 @@ const lightUniforms = {
 const globalUniforms = {
     u_projection: projection,
     u_view: Mat4.inverse(camera),
-    u_cameraPosition: Vec3.create(), 
 } 
 
 
-
-//////////////////
-//   TEXTURES   //
-//////////////////
-
-const colorTexture = twgl.createTexture(gl, { src: [255,0,0,255] })
-const tilesTexture = twgl.createTexture(gl, { 
-    src: "assets/tiles.jpg" 
-})
-
-const cubeMap = twgl.createTexture(gl, {
-    target: gl.TEXTURE_CUBE_MAP,
-    src: [
-        "assets/tiles.jpg",
-        "assets/tiles.jpg",
-        "assets/tiles.jpg",
-        "assets/tiles.jpg",
-        "assets/tiles.jpg",
-        "assets/tiles.jpg"
-      ],
-})
-const cubeMap2 = twgl.createTexture(gl, {
-    target: gl.TEXTURE_CUBE_MAP,
-    src: [
-        'assets/xpos.jpg',
-        'assets/xneg.jpg',
-        'assets/ypos.jpg',
-        'assets/yneg.jpg', // gibts nicht?
-        'assets/zpos.jpg',
-        'assets/zneg.jpg',
-      ],
-})
 
 
 //////////////////
@@ -111,8 +125,9 @@ const cubeMap2 = twgl.createTexture(gl, {
 //////////////////
 const poolModelMat = Mat4.identity()
 Mat4.scale(poolModelMat, [1, 1, 1], poolModelMat)
-Mat4.translate(poolModelMat, [0, -.5, 0], poolModelMat) 
+Mat4.translate(poolModelMat, [0, 0, 0], poolModelMat) 
 
+let s = 14/24
 const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
     indices: { numComponents: 3, data: [
         0,  1,  2,      0,  2,  3,    // vorne
@@ -125,12 +140,12 @@ const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
         // vorderne
         -1.0, -1.0,  1.0,
         1.0, -1.0,  1.0,
-        1.0,  1.0,  1.0,
-        -1.0,  1.0,  1.0,
+        1.0,  1.0*s/2,  1.0,
+        -1.0,  1.0*s/2,  1.0,
        // hinteren
        -1.0, -1.0, -1.0,
-       -1.0,  1.0, -1.0,
-        1.0,  1.0, -1.0,
+       -1.0,  1.0*s/2, -1.0,
+        1.0,  1.0*s/2, -1.0,
         1.0, -1.0, -1.0,
        // unteren
        -1.0, -1.0, -1.0,
@@ -139,14 +154,41 @@ const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
        -1.0, -1.0,  1.0,
        // rechts
         1.0, -1.0, -1.0,
-        1.0,  1.0, -1.0,
-        1.0,  1.0,  1.0,
+        1.0,  1.0*s/2, -1.0,
+        1.0,  1.0*s/2,  1.0,
         1.0, -1.0,  1.0,
        // links
        -1.0, -1.0, -1.0,
        -1.0, -1.0,  1.0,
-       -1.0,  1.0,  1.0,
-       -1.0,  1.0, -1.0
+       -1.0,  1.0*s/2,  1.0,
+       -1.0,  1.0*s/2, -1.0
+    ]},
+    a_texcoord: { numComponents: 2, data: [
+        // vorne
+        0.0,  0.0,
+        1.0,  0.0,
+        1.0,  1.0*s,
+        0.0,  1.0*s,
+        // hinten
+        0.0,  0.0,
+        1.0*s,  0.0,
+        1.0*s,  1.0,
+        0.0,  1.0,
+        // unten
+        0.0,  0.0,
+        1.0,  0.0,
+        1.0,  1.0,
+        0.0,  1.0,
+        // rechts
+        0.0,  0.0,
+        1.0*s,  0.0,
+        1.0*s,  1.0,
+        0.0,  1.0,
+        // links
+        0.0,  0.0,
+        1.0,  0.0,
+        1.0,  1.0*s,
+        0.0,  1.0*s
     ]},
     a_normal: { numComponents: 3, data: [
         //vorne
@@ -174,39 +216,11 @@ const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
         -1, 0, 0,
         -1, 0, 0,
         -1, 0, 0,
-
-    ]},
-    a_texcoord: { numComponents: 2, data: [
-        // vorne
-        0.0,  0.0,
-        1.0,  0.0,
-        1.0,  1.0,
-        0.0,  1.0,
-        // hinten
-        0.0,  0.0,
-        1.0,  0.0,
-        1.0,  1.0,
-        0.0,  1.0,
-        // unten
-        0.0,  0.0,
-        1.0,  0.0,
-        1.0,  1.0,
-        0.0,  1.0,
-        // rechts
-        0.0,  0.0,
-        1.0,  0.0,
-        1.0,  1.0,
-        0.0,  1.0,
-        // links
-        0.0,  0.0,
-        1.0,  0.0,
-        1.0,  1.0,
-        0.0,  1.0
     ]},
 })
 const poolUniforms = {
     u_model: poolModelMat,
-    u_texture: tilesTexture
+    u_texture: tilesTexture,
 }
 
 
@@ -214,6 +228,7 @@ const poolUniforms = {
 //     WATER    //
 //////////////////
 const waterModelMat = Mat4.identity() // benutzen anstatt width
+Mat4.translate(waterModelMat, [0, 0.1, 0], waterModelMat) 
 Mat4.scale(waterModelMat, [2, 1, 2], waterModelMat)
 
 const verticesX = 80 
@@ -232,8 +247,9 @@ const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
 })
 const waterUniforms = { 
     u_model: waterModelMat,
+    u_cubeMap: cubeMap,
     u_bottomModelMat: poolModelMat, // adjust
-    u_cubeMap: cubeMap
+    u_cameraPosition: Vec3.create(), 
 }
 
 
@@ -261,7 +277,7 @@ function update(){
 
 function updateCamera() {
     Mat4.inverse(camera, globalUniforms.u_view)
-    Mat4.getTranslation(camera, globalUniforms.u_cameraPosition)
+    Mat4.getTranslation(camera, waterUniforms.u_cameraPosition)
 }
 
 function updateSimulation() {

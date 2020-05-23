@@ -34,12 +34,12 @@ export const water_fs =
     uniform vec3 u_cameraPosition;
     uniform samplerCube u_cubeMap;
 
-    // bottom sclae + transform über bottomModelMat?
-    // später generisch als struc für alle wande mit position
+    // alle infos aus bottomModelMat ziehen??
     // parameterfrom?
-    float d = 1.0;
-    float w = 1.0;
-    float l = 1.0;    
+    float d = 1.0; // pool y ausdehung
+    float w = 1.0; // pool x ausdehung
+    float l = 1.0; // pool z ausdehung
+    float h = 0.1; // y verschiebung bzw wasserstand von 0 punkt aus
 
     vec2 getUVFromRectangle(vec2 hit, float rectWidth, float rectHeight){
         float u = (hit.x + 0.5*rectWidth)/rectWidth;
@@ -53,47 +53,51 @@ export const water_fs =
         return u && v;
     }
 
-    // d ist verschiebung in richtung n
-    // returns scalar t. hit = origin + t*ray
+    // d ist verschiebung der ebene in richtung n
+    // returns scalar t
+    // hit = origin + t*ray
     float intersectRayPlane(vec3 origin, vec3 ray, vec3 n, float d){
         float t = (d - dot(n, origin)) / dot(n, ray);
         return t;
     }  
 
+    // das komisch kommt dann wenn spiegelung statt refraction kommen müsste 
     void main() {
         vec3 eyeRay = normalize(v_position.xyz - u_cameraPosition);
 
-        vec3 refractRay = refract(eyeRay, v_normal, 1.0/1.1);
+        bool aboveWater = u_cameraPosition.y > h;
+        vec3 normal = aboveWater ? v_normal : -v_normal;
+        float eta = aboveWater ? 1.0/1.3 : 1.3/1.0;
+  
+        vec3 refractRay = refract(eyeRay, normal, eta);
+        float t1 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 1, 0), -d-h);
+        float t2 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, -1, 0), -d+h);
+        float t3 = intersectRayPlane(v_position.xyz, refractRay, vec3(1, 0, 0), -w);
+        float t4 = intersectRayPlane(v_position.xyz, refractRay, vec3(-1, 0, 0), -w);
+        float t5 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, 1), -l);
+        float t6 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, -1), -l);
 
-        float t1 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 1, 0), -d);
-        float t2 = intersectRayPlane(v_position.xyz, refractRay, vec3(1, 0, 0), -w);
-        float t3 = intersectRayPlane(v_position.xyz, refractRay, vec3(-1, 0, 0), -w);
-        float t4 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, 1), -l);
-        float t5 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, -1), -l);
-
-        float t = 0.0;
-
-        if(t1 >= 0.0){
+        // get a valid value first, then smallest one above 0
+        float t = max(0.0, max(t1, max(t2, max(t3, max(t4, max(t5, t6)))))); 
+      
+          if(t1 > 0.0 && t1 < t){
             t = t1;
-        }
-        if (t2 > 0.0 && t2 < t) {
+        } if(t2 > 0.0 && t2 < t) {
             t = t2;
-        } 
-        if (t3 > 0.0 && t3 < t) {
+        } if(t3 > 0.0 && t3 < t) {
             t = t3;
-        } 
-        if (t4 > 0.0 && t4 < t) {
+        } if(t4 > 0.0 && t4 < t) {
             t = t4;
-        }       
-        if (t5 > 0.0 && t5 < t) {
+        } if(t5 > 0.0 && t5 < t) {
             t = t5;
+        } if(t6 > 0.0 && t6 < t) {
+            t = t6;
         } 
 
-        vec3 hit = v_position.xyz + t * refractRay;
-        vec3 mRay = -vec3(hit.x/w, hit.y/d, hit.z/l); 
+        vec3 hit = v_position.xyz + t*refractRay;
+        hit.y += h;
+        vec3 mRay = vec3(hit.x/w, hit.y/d, hit.z/l); 
         gl_FragColor = textureCube(u_cubeMap, mRay);
         gl_FragColor.b = 1.0;
-        //gl_FragColor = vec4(v_normal, 1.0);
     }
-
 `
