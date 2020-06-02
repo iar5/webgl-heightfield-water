@@ -9,3 +9,6 @@ mehrere rechtecke
 
 Wasser mit seitenwänden damit färben kann
 geisrerspalte u
+
+TODO testen ob auf windows textur auch so komisch
+canvas doppelte size für retina wie bei svg particles?

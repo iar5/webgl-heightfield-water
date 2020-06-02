@@ -28,7 +28,7 @@ document.body.appendChild(stats.dom)
 
 var paused = false
 const canvas = document.getElementById("canvas")
-const gl = canvas.getContext("webgl2")
+const gl = canvas.getContext("webgl2", {antialias: false})
 twgl.resizeCanvasToDisplaySize(gl.canvas)
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 gl.enable(gl.BLEND)
@@ -45,13 +45,17 @@ const waterProgram = twgl.createProgramInfo(gl, [water_vs, water_fs])
 //   TEXTURES   //
 //////////////////
 
-const colorTexture = twgl.createTexture(gl, { src: [255,0,0,255] })
+const colorTexture = twgl.createTexture(gl, { src: [255, 0, 0, 255] })
 const tilesTexture = twgl.createTexture(gl, { 
+    //mag: gl.LINEAR,
+    //min: gl.LINEAR,
     src: "assets/tiles.jpg" 
 })
 
 const cubeMap = twgl.createTexture(gl, {
     target: gl.TEXTURE_CUBE_MAP,
+    //mag: gl.LINEAR,
+    //min: gl.LINEAR,
     src: [
         "assets/tiles.jpg",
         "assets/tiles.jpg",
@@ -63,6 +67,8 @@ const cubeMap = twgl.createTexture(gl, {
 })
 const cubeMapEnv = twgl.createTexture(gl, {
     target: gl.TEXTURE_CUBE_MAP,
+    mag: gl.LINEAR,
+    min: gl.LINEAR,
     src: [
         'assets/xpos.jpg',
         'assets/xneg.jpg',
@@ -90,21 +96,17 @@ const cubeMapTest = twgl.createTexture(gl, {
 // CAMERA, etc..//
 //////////////////
 
-var fov = 35 * Math.PI / 180
-var aspect = gl.canvas.clientWidth / gl.canvas.clientHeight
-var near = 0.001
-var far = 100
-const projection = Mat4.perspective(fov, aspect, near, far)
+var fov = degToRad(45)
+const projection = Mat4.perspective(fov,  canvas.width/canvas.height, 0.01, 100)
 
 window.addEventListener("resize", e => {
-    gl.viewport(0, 0, canvas.clientWidth, canvas.clientHeight)
+    gl.viewport(0, 0, canvas.width, canvas.width)
     twgl.resizeCanvasToDisplaySize(canvas)
-    aspect = canvas.clientWidth / canvas.clientHeight    
-    Mat4.perspective(fov, aspect, near, far, projection)
+    Mat4.perspective(fov,  canvas.width/canvas.height, 0.01, 100, projection)
 })
 
-
-const camera = createOrbitCamera(canvas, [0, 0, 5], 45, 0)
+const camera = createOrbitCamera(canvas, 45, 0)
+camera.setPosition(0, -0.4, 4)
 
 const lightUniforms = {
     ambient: [0.3, 0.3, 0.3],
@@ -114,7 +116,7 @@ const lightUniforms = {
 
 const globalUniforms = {
     u_projection: projection,
-    u_view: Mat4.inverse(camera),
+    u_view: Mat4.identity(),
 } 
 
 
@@ -127,7 +129,7 @@ const poolModelMat = Mat4.identity()
 Mat4.scale(poolModelMat, [1, 1, 1], poolModelMat)
 Mat4.translate(poolModelMat, [0, 0, 0], poolModelMat) 
 
-let s = 14/24
+let s = 14/24 // scale calculated by tiles (want to see 14 of 24 tiles)
 const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
     indices: { numComponents: 3, data: [
         0,  1,  2,      0,  2,  3,    // vorne
@@ -227,7 +229,7 @@ const poolUniforms = {
 //////////////////
 //     WATER    //
 //////////////////
-const waterModelMat = Mat4.identity() // benutzen anstatt width
+const waterModelMat = Mat4.identity() 
 Mat4.translate(waterModelMat, [0, 0.1, 0], waterModelMat) 
 Mat4.scale(waterModelMat, [2, 1, 2], waterModelMat)
 
@@ -248,6 +250,7 @@ const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
 const waterUniforms = { 
     u_model: waterModelMat,
     u_cubeMap: cubeMap,
+    u_cubeEnvMap: cubeMapEnv,
     u_bottomModelMat: poolModelMat, // adjust
     u_cameraPosition: Vec3.create(), 
 }
@@ -270,14 +273,15 @@ function update(){
     requestAnimationFrame(update)
     stats.begin()
     updateCamera()
-    if(!paused) updateSimulation()
+    if(!paused) 
+        updateSimulation()
     render()
     stats.end()
 }
 
 function updateCamera() {
-    Mat4.inverse(camera, globalUniforms.u_view)
-    Mat4.getTranslation(camera, waterUniforms.u_cameraPosition)
+    Mat4.inverse(camera.mat, globalUniforms.u_view)
+    Mat4.getTranslation(camera.mat, waterUniforms.u_cameraPosition)
 }
 
 function updateSimulation() {

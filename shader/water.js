@@ -33,13 +33,15 @@ export const water_fs =
 
     uniform vec3 u_cameraPosition;
     uniform samplerCube u_cubeMap;
+    uniform samplerCube u_cubeEnvMap;
 
     // alle infos aus bottomModelMat ziehen??
     // parameterfrom?
-    float d = 1.0; // pool y ausdehung
     float w = 1.0; // pool x ausdehung
+    float d = 1.0; // pool y ausdehung
     float l = 1.0; // pool z ausdehung
     float h = 0.1; // y verschiebung bzw wasserstand von 0 punkt aus
+    float k = 0.6; // poolkante
 
     vec2 getUVFromRectangle(vec2 hit, float rectWidth, float rectHeight){
         float u = (hit.x + 0.5*rectWidth)/rectWidth;
@@ -77,7 +79,7 @@ export const water_fs =
         float t5 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, 1), -l);
         float t6 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, -1), -l);
 
-        // get a valid value first, then smallest one above 0
+        // get a valid value first, then find the smallest one above 0
         float t = max(0.0, max(t1, max(t2, max(t3, max(t4, max(t5, t6)))))); 
       
           if(t1 > 0.0 && t1 < t){
@@ -97,7 +99,10 @@ export const water_fs =
         vec3 hit = v_position.xyz + t*refractRay;
         hit.y += h;
         vec3 mRay = vec3(hit.x/w, hit.y/d, hit.z/l); 
-        gl_FragColor = textureCube(u_cubeMap, mRay);
+        if(hit.y > d-h-k) // höhe-poolkante-wasserhöhe
+            gl_FragColor = textureCube(u_cubeEnvMap, eyeRay);
+        else
+            gl_FragColor = textureCube(u_cubeMap, mRay);
         gl_FragColor.b = 1.0;
     }
 `

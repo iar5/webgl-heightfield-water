@@ -79,17 +79,20 @@ export function loadImage(src, callback){
 /**
  * Simple orbit/arc camera rotating around y-axis on a circle at xz-plane
  * @param {*} canvas 
- * @param {*} camera 
- * @param {*} distance 
+ * @param {*} rx initial x rotation in rad
+ * @param {*} ry initial y rotation in rad
  */
-export function createOrbitCamera(canvas, pos, rx, ry){
-    const camera = Mat4.identity()
+export function createOrbitCamera(canvas, rx, ry){
+    const mat = Mat4.identity()
+    const pos = Vec3.create()
+
     var mouseDown
     var lastMouseU
     var lastMouseV
     var usum = ry
     var vsum = rx
-    calc()
+    update()
+
     canvas.onmousedown = function(e) {
         mouseDown = true
         lastMouseU = e.clientX
@@ -104,13 +107,23 @@ export function createOrbitCamera(canvas, pos, rx, ry){
         lastMouseV =  e.clientY
         usum += deltaU
         vsum += deltaV
-        calc()
+        update()
     }
-    function calc(){
-        Mat4.identity(camera)
-        Mat4.rotateY(camera, -degToRad(usum / 4), camera)
-        Mat4.rotateX(camera, -degToRad(vsum / 4), camera)
-        Mat4.translate(camera, pos, camera)
+    function update(){
+        Mat4.identity(mat)
+        Mat4.rotateY(mat, -degToRad(usum/4), mat)
+        Mat4.rotateX(mat, -degToRad(vsum/4), mat)
+        Mat4.translate(mat, pos, mat)
     }
-    return camera
+    
+    return {
+        mat,
+        getPosition(){
+            return [pos.x, pos.y, pos.z]
+        },
+        setPosition(x, y, z){
+            Vec3.set(pos, x, y, z)
+            update()
+        }
+    }
 }
