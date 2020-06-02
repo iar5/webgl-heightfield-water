@@ -96,7 +96,7 @@ const cubeMapTest = twgl.createTexture(gl, {
 // CAMERA, etc..//
 //////////////////
 
-var fov = degToRad(45)
+const fov = degToRad(45)
 const projection = Mat4.perspective(fov,  canvas.width/canvas.height, 0.01, 100)
 
 window.addEventListener("resize", e => {
@@ -125,11 +125,12 @@ const globalUniforms = {
 //////////////////
 //    POOL      //
 //////////////////
+const s = 14/24 // scale calculated by tiles (want to see 14 of 24 tiles)
+
 const poolModelMat = Mat4.identity()
 Mat4.scale(poolModelMat, [1, 1, 1], poolModelMat)
 Mat4.translate(poolModelMat, [0, 0, 0], poolModelMat) 
 
-let s = 14/24 // scale calculated by tiles (want to see 14 of 24 tiles)
 const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
     indices: { numComponents: 3, data: [
         0,  1,  2,      0,  2,  3,    // vorne
