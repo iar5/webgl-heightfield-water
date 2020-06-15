@@ -79,12 +79,13 @@ export function loadImage(src, callback){
 /**
  * Simple orbit/arc camera rotating around y-axis on a circle at xz-plane
  * @param {*} canvas 
+ * @param {*} pos 
  * @param {*} rx initial x rotation in rad
  * @param {*} ry initial y rotation in rad
  */
-export function createOrbitCamera(canvas, rx, ry){
+export function createOrbitCamera(canvas, position, rx, ry){
     const mat = Mat4.identity()
-    const pos = Vec3.create()
+    const pos = position
 
     var mouseDown
     var lastMouseU
@@ -101,18 +102,20 @@ export function createOrbitCamera(canvas, rx, ry){
     document.onmouseup = function(e) { mouseDown = false }
     document.onmousemove = function(e) {
         if (!mouseDown) return
-        let deltaU = e.clientX - lastMouseU
-        let deltaV =  e.clientY - lastMouseV
+        let deltaU = (e.clientX - lastMouseU)/4
+        let deltaV =  (e.clientY - lastMouseV)/4
         lastMouseU = e.clientX
         lastMouseV =  e.clientY
         usum += deltaU
         vsum += deltaV
+        if(vsum>90) vsum=90
+        if(vsum<-90) vsum=-90
         update()
     }
     function update(){
         Mat4.identity(mat)
-        Mat4.rotateY(mat, -degToRad(usum/4), mat)
-        Mat4.rotateX(mat, -degToRad(vsum/4), mat)
+        Mat4.rotateY(mat, -degToRad(usum), mat)
+        Mat4.rotateX(mat, -degToRad(vsum), mat)
         Mat4.translate(mat, pos, mat)
     }
     

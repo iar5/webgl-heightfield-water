@@ -15,10 +15,9 @@ export const texture_vs =
     varying vec2 v_texcoord;
 
     void main() {
+        v_normal = a_normal;
         v_position = u_model * vec4(a_position, 1.0);
-        v_normal = a_normal; 
-        v_texcoord = a_texcoord;
-
+        v_texcoord = a_texcoord;;
         gl_Position = u_projection * u_view * v_position; 
     }
 `

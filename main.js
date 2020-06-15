@@ -44,7 +44,6 @@ const waterProgram = twgl.createProgramInfo(gl, [water_vs, water_fs])
 //////////////////
 //   TEXTURES   //
 //////////////////
-
 const colorTexture = twgl.createTexture(gl, { src: [255, 0, 0, 255] })
 const tilesTexture = twgl.createTexture(gl, { 
     //mag: gl.LINEAR,
@@ -95,7 +94,6 @@ const cubeMapTest = twgl.createTexture(gl, {
 //////////////////
 // CAMERA, etc..//
 //////////////////
-
 const fov = degToRad(45)
 const projection = Mat4.perspective(fov,  canvas.width/canvas.height, 0.01, 100)
 
@@ -105,8 +103,7 @@ window.addEventListener("resize", e => {
     Mat4.perspective(fov,  canvas.width/canvas.height, 0.01, 100, projection)
 })
 
-const camera = createOrbitCamera(canvas, 45, 0)
-camera.setPosition(0, -0.4, 4)
+const camera = createOrbitCamera(canvas, Vec3.create(0, -0.1, 4), 25, 0)
 
 const lightUniforms = {
     ambient: [0.3, 0.3, 0.3],
@@ -128,8 +125,8 @@ const globalUniforms = {
 const s = 14/24 // scale calculated by tiles (want to see 14 of 24 tiles)
 
 const poolModelMat = Mat4.identity()
-Mat4.scale(poolModelMat, [1, 1, 1], poolModelMat)
-Mat4.translate(poolModelMat, [0, 0, 0], poolModelMat) 
+Mat4.translate(poolModelMat, [0, s-1, 0], poolModelMat) 
+Mat4.scale(poolModelMat, [1, s, 1], poolModelMat)
 
 const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
     indices: { numComponents: 3, data: [
@@ -143,12 +140,12 @@ const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
         // vorderne
         -1.0, -1.0,  1.0,
         1.0, -1.0,  1.0,
-        1.0,  1.0*s/2,  1.0,
-        -1.0,  1.0*s/2,  1.0,
+        1.0,  1.0,  1.0,
+        -1.0,  1.0,  1.0,
        // hinteren
        -1.0, -1.0, -1.0,
-       -1.0,  1.0*s/2, -1.0,
-        1.0,  1.0*s/2, -1.0,
+       -1.0,  1.0, -1.0,
+        1.0,  1.0, -1.0,
         1.0, -1.0, -1.0,
        // unteren
        -1.0, -1.0, -1.0,
@@ -157,14 +154,14 @@ const poolBufferInfo = twgl.createBufferInfoFromArrays(gl, {
        -1.0, -1.0,  1.0,
        // rechts
         1.0, -1.0, -1.0,
-        1.0,  1.0*s/2, -1.0,
-        1.0,  1.0*s/2,  1.0,
+        1.0,  1.0, -1.0,
+        1.0,  1.0,  1.0,
         1.0, -1.0,  1.0,
        // links
        -1.0, -1.0, -1.0,
        -1.0, -1.0,  1.0,
-       -1.0,  1.0*s/2,  1.0,
-       -1.0,  1.0*s/2, -1.0
+       -1.0,  1.0,  1.0,
+       -1.0,  1.0, -1.0
     ]},
     a_texcoord: { numComponents: 2, data: [
         // vorne
@@ -231,7 +228,7 @@ const poolUniforms = {
 //     WATER    //
 //////////////////
 const waterModelMat = Mat4.identity() 
-Mat4.translate(waterModelMat, [0, 0.1, 0], waterModelMat) 
+Mat4.translate(waterModelMat, [0, 0, 0], waterModelMat) 
 Mat4.scale(waterModelMat, [2, 1, 2], waterModelMat)
 
 const verticesX = 80 
@@ -260,9 +257,8 @@ const waterUniforms = {
 
 
 //////////////////
-// START MAIN LOOP
+//   MAIN LOOP  //
 //////////////////
-
 start()
 
 function start(){

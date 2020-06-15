@@ -25,13 +25,19 @@
 
 
 /**
- * Erklärung
- * 1. regelmäßiger würfel wird über fragment gezogen (die verschiebung wird später zurük gerechnet?)
- * 2. hit berechnung
- * 3. der vektor vom ursprung zum hit wird dann als winkel für cubemap genommen
- * 3.b der vektor wird dazu ggf normalisiert
- * - die verschiebung geschieht alleine durch die modelmat hähe (bzw. fragment)
- * - dabei wird davon ausgegangen, dass sich der pool um den mittelpunkt herum befindet
+ * Erklärung Ablauf
+ * 1. würfel wird über abstände vom nullpunkt in xyz definiert 
+ * 2. hit berechnung von eye-fragment mit würfel
+ * 3. texturierung: der hit-vektor wird als winkel für cubemap genommen
+ * 3.a wenn der pool skaliert (und verschoben?) ist, wird das beim hit vektor entsprechend gegengerechnet
+ * 
+ * Benutzung
+ * - wasser modelmat kann verschoben werden da berechnung über fragmetn positionen geht
+ * - pool definition muss entsprechend mit angepasst werden, wenn zb verschoben wird
+ * 
+ * Die komisch krumme Verzerrung bei gesetztem eta kommt wenn spiegelung statt refraction sein müsste 
+ * 
+ * 
  */
 export const water_fs = 
 `
@@ -44,42 +50,26 @@ export const water_fs =
     uniform samplerCube u_cubeMap;
     uniform samplerCube u_cubeEnvMap;
 
-    // alle infos aus bottomModelMat ziehen? parameterfrom?
-    float w = 1.0; // pool x abstand vom zentrum der wasserebene
-    float d = 1.0; // pool y abstand "
-    float l = 1.0; // pool z abstand "
-    float od = 14./24./2.; // pool y abstand nach oben "
+    // dimensions of the underlying pool with center at origin. fetch from modelmat?
+    float w = 1.0; // x -+ abstand vom zentrum zur poolwand (nicht abstand vom wasser!!!)
+    float l = 1.0; // z -+
+    float d = 1.0; // y -
+    float dh = 4./24.; // y+ höhe der pool kante, ab welcher dann env map genommen wird
 
-    // TODO ohne od klappt top, auch wenn verschiebung nur über translation! mit höhe etc aber skalierung wack
-
-    vec2 getUVFromRectangle(vec2 hit, float rectWidth, float rectHeight){
-        float u = (hit.x + 0.5*rectWidth)/rectWidth;
-        float v = (hit.y + 0.5*rectHeight)/rectHeight;
-        return vec2(u, v);
-    }
-
-    bool isHitInRectangle(vec2 hit, float rectWidth, float rectHeight){
-        bool u = -rectWidth/2.0 <= hit.x && hit.x <= rectWidth/2.0;
-        bool v = -rectHeight/2.0 <= hit.y && hit.y <= rectHeight/2.0;
-        return u && v;
-    }
-
-    // d ist verschiebung der ebene in richtung n
-    // returns scalar t
-    // hit = origin + t*ray
+    // d ist verschiebung der ebene in richtung n vom nullpunkt
+    // returns scalar t with hit = origin + t*ray
     float intersectRayPlane(vec3 origin, vec3 ray, vec3 n, float d){
         float t = (d - dot(n, origin)) / dot(n, ray);
         return t;
     }  
 
-    // das komisch kommt dann wenn spiegelung statt refraction kommen müsste 
     void main() {
         vec3 eyeRay = normalize(v_position.xyz - u_cameraPosition);
 
         bool aboveWater = u_cameraPosition.y > v_position.y;
         vec3 normal = aboveWater ? v_normal : -v_normal;
-        //float eta = aboveWater ? 1.0/1.3 : 1.3/1.0;
-        float eta = aboveWater ? 1.0 : 1.0;
+        float eta = aboveWater ? 1.0/1.3 : 1.3/1.0;
+        eta = aboveWater ? 1.0 : 1.0;
 
         vec3 refractRay = refract(eyeRay, normal, eta);
         float t1 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, -1, 0), -d); // top 
@@ -100,11 +90,10 @@ export const water_fs =
 
         vec3 hit = v_position.xyz + t*refractRay;
 
-        if(hit.y > od){
+        if(hit.y > dh){
             gl_FragColor = textureCube(u_cubeEnvMap, eyeRay);
         }
         else{
-            hit.y -= od;
             vec3 mRay = vec3(hit.x/w, hit.y/d, hit.z/l); // cube map scale correction
             gl_FragColor = textureCube(u_cubeMap, mRay);
         }
