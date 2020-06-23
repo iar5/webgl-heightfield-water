@@ -50,11 +50,12 @@ export const water_fs =
     uniform samplerCube u_cubeMap;
     uniform samplerCube u_cubeEnvMap;
 
-    // dimensions of the underlying pool with center at origin. fetch from modelmat?
-    float w = 1.0; // x -+ abstand vom zentrum zur poolwand (nicht abstand vom wasser!!!)
+    // parameters of the underlying pool, fetch them from modelmat?
+    vec3 c = vec3(0, 0, 0); // pool center
+    float w = 1.0; // x -+ distance to c
     float l = 1.0; // z -+
-    float d = 1.0; // y -
-    float dh = 4./24.; // y+ höhe der pool kante, ab welcher dann env map genommen wird
+    float h = 1.0; // y -
+    float ht = 4./24.; // y+ 
 
     // d ist verschiebung der ebene in richtung n vom nullpunkt
     // returns scalar t with hit = origin + t*ray
@@ -69,15 +70,15 @@ export const water_fs =
         bool aboveWater = u_cameraPosition.y > v_position.y;
         vec3 normal = aboveWater ? v_normal : -v_normal;
         float eta = aboveWater ? 1.0/1.3 : 1.3/1.0;
-        eta = aboveWater ? 1.0 : 1.0;
+        eta = 1.0;
 
         vec3 refractRay = refract(eyeRay, normal, eta);
-        float t1 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, -1, 0), -d); // top 
-        float t2 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 1, 0), -d); // bottom
-        float t3 = intersectRayPlane(v_position.xyz, refractRay, vec3(-1, 0, 0), -w);
-        float t4 = intersectRayPlane(v_position.xyz, refractRay, vec3(1, 0, 0), -w);
-        float t5 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, -1), -l);
-        float t6 = intersectRayPlane(v_position.xyz, refractRay, vec3(0, 0, 1), -l);
+        float t1 = intersectRayPlane(v_position.xyz-c, refractRay, vec3(0, -1, 0), -h); // top 
+        float t2 = intersectRayPlane(v_position.xyz-c, refractRay, vec3(0, 1, 0), -h); // bottom
+        float t3 = intersectRayPlane(v_position.xyz-c, refractRay, vec3(-1, 0, 0), -w);
+        float t4 = intersectRayPlane(v_position.xyz-c, refractRay, vec3(1, 0, 0), -w);
+        float t5 = intersectRayPlane(v_position.xyz-c, refractRay, vec3(0, 0, -1), -l);
+        float t6 = intersectRayPlane(v_position.xyz-c, refractRay, vec3(0, 0, 1), -l);
 
         // get a valid value first, then find the smallest one above 0
         float t = max(0.0, max(t1, max(t2, max(t3, max(t4, max(t5, t6)))))); 
@@ -90,11 +91,12 @@ export const water_fs =
 
         vec3 hit = v_position.xyz + t*refractRay;
 
-        if(hit.y > dh){
+        if(hit.y > ht){
             gl_FragColor = textureCube(u_cubeEnvMap, eyeRay);
         }
         else{
-            vec3 mRay = vec3(hit.x/w, hit.y/d, hit.z/l); // cube map scale correction
+            hit -= c; // cube map pos correction
+            vec3 mRay = vec3(hit.x/w, hit.y/h, hit.z/l); // cube map scale correction
             gl_FragColor = textureCube(u_cubeMap, mRay);
         }
         gl_FragColor.b = 1.0;
