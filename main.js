@@ -5,7 +5,7 @@ import Stats from './lib/stats.module.js'
 import { texture_vs, texture_fs } from './shader/texture.js'
 import { water_vs, water_fs } from './shader/water.js'
 import { degToRad, createOrbitCamera } from './utils.js'
-import HeightmapSimulation from './simulators/HeightmapSimulation.js'
+import HeightfieldSimulation from './simulators/HeightfieldSimulation.js'
 import { simulation } from './simulators/simplewater.js'
 
 
@@ -231,12 +231,12 @@ const waterModelMat = Mat4.identity()
 Mat4.translate(waterModelMat, [0, 0, 0], waterModelMat) 
 Mat4.scale(waterModelMat, [2, 1, 2], waterModelMat)
 
-const heightmapSimulation = new HeightmapSimulation(80, 80, simulation)
+const heightfieldSimulation = new HeightfieldSimulation(80, 80, simulation)
 
 const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
-    indices: { numComponents: 3, data: Uint32Array.from(heightmapSimulation.indices) }, // use gl.drawElements() with 32 Bit (waterBufferInfo.elementType is set to gl.UNSIGNED_INT)
-    a_position: { numComponents: 3, data: heightmapSimulation.vertices },
-    a_normal: { numComponents: 3, data: heightmapSimulation.normals },
+    indices: { numComponents: 3, data: Uint32Array.from(heightfieldSimulation.indices) }, // use gl.drawElements() with 32 Bit (waterBufferInfo.elementType is set to gl.UNSIGNED_INT)
+    a_position: { numComponents: 3, data: heightfieldSimulation.vertices },
+    a_normal: { numComponents: 3, data: heightfieldSimulation.normals },
 })
 
 const waterUniforms = { 
@@ -260,9 +260,9 @@ function update(){
     stats.begin()
     updateCamera()
     if(!paused) {
-        heightmapSimulation.update()
-        twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_position, heightmapSimulation.vertices);
-        twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_normal, heightmapSimulation.normals);
+        heightfieldSimulation.update()
+        twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_position, heightfieldSimulation.vertices);
+        twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_normal, heightfieldSimulation.normals);
     }
     render()
     stats.end()

@@ -3,7 +3,7 @@ import * as Mat4 from '../lib/twgl/m4.js'
 import { makeUniformGrid, makeTriangleStripIndices } from '../utils.js'
 
 
-export default class HeightmapSimulation{
+export default class HeightfieldSimulation{
 
     constructor(verticesX, verticesZ, simulation){
         this.verticesX = verticesX
