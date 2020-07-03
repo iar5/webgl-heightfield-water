@@ -26,18 +26,11 @@
 
 /**
  * Erklärung Ablauf
- * 1. würfel wird über abstände vom nullpunkt in xyz definiert 
- * 2. hit berechnung von eye-fragment mit würfel
- * 3. texturierung: der hit-vektor wird als winkel für cubemap genommen
- * 3.a wenn der pool skaliert (und verschoben?) ist, wird das beim hit vektor entsprechend gegengerechnet
- * 
- * Benutzung
- * - wasser modelmat kann verschoben werden da berechnung über fragmetn positionen geht
- * - pool definition muss entsprechend mit angepasst werden, wenn zb verschoben wird
+ * 1. hit berechnung von eye-fragment mit würfel (verschiebung der wasseroberfläche also über vertices)
+ * 2. texturierung: der hit-vektor wird als winkel für cubemap genommen
+ * 2.a wenn der pool skaliert oder verschoben ist, wird das beim hit vektor entsprechend gegengerechnet
  * 
  * Die komisch krumme Verzerrung bei gesetztem eta kommt wenn spiegelung statt refraction sein müsste 
- * 
- * 
  */
 export const water_fs = 
 `

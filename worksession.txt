@@ -1,14 +1,8 @@
-Pool 
-- idk wie cubemap
+Pool mehrere Rechtecke
 - immer gleicheh texture nehmen, oben sit ja leer
+- nachteil: brauch matrix fünf mal wegen rotation
 
-mehrere rechtecke
-- nachteil: brauch matrix fürmalen wegen rotation
-
-
+canvas doppelte size für retina wie bei svg particles?
 
 Wasser mit seitenwänden damit färben kann
 geisrerspalte u
-
-TODO testen ob auf windows textur auch so komisch
-canvas doppelte size für retina wie bei svg particles?

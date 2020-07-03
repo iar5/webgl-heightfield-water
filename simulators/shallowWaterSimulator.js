@@ -7,7 +7,7 @@ var u
 function initialize(_widthX, _widthZ){
     widthX = _widthX
     widthZ = _widthZ
-    u = [...Array(widthX)].map(e => Array(widthZ).fill(0));
+    u = Array(widthX).map(e => Array(widthZ).fill(0));
 
     for(let i=0; i<widthX; i++){
         for(let j=0; j<widthZ; j++){
