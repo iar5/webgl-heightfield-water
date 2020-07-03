@@ -35,7 +35,7 @@ function update(){
  * PUBLIC FUNCTIONS
  */
 export const simulation = (function(){
-    return{
+    return {
         initialize,
         update,
     }

@@ -15,8 +15,8 @@ var v
 
 /**
  * when 
- * @param {*} verticesXCount 
- * @param {*} verticesZCount 
+ * @param {Number} verticesXCount 
+ * @param {Number} verticesZCount 
  */
 function initialize(x, y){
     verticesX = x
@@ -69,7 +69,7 @@ function update(){
  * PUBLIC FUNCTIONS
  */
 export const simulation = (function(){
-    return{
+    return {
         initialize,
         update,
     }
