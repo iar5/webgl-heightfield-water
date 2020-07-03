@@ -4,7 +4,7 @@ import * as Mat4 from './lib/twgl/m4.js'
 import Stats from './lib/stats.module.js'
 import { texture_vs, texture_fs } from './shader/texture.js'
 import { water_vs, water_fs } from './shader/water.js'
-import { degToRad, createOrbitCamera } from './utils.js'
+import { degToRad, createOrbitCamera } from './lib//utils.js'
 import HeightfieldSimulation from './simulators/HeightfieldSimulation.js'
 import { simulation } from './simulators/simplewater.js'
 
@@ -27,13 +27,14 @@ document.body.appendChild(stats.dom)
 
 var paused = false
 const canvas = document.getElementById("canvas")
-const gl = canvas.getContext("webgl2", {antialias: false})
+const gl = canvas.getContext("webgl", {antialias: true})
 twgl.resizeCanvasToDisplaySize(gl.canvas)
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 gl.enable(gl.BLEND)
 gl.enable(gl.DEPTH_TEST)
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 gl.getExtension('OES_element_index_uint') // to use bigger indice arrays, already enabled in chrome but for older versions
+
 const poolProgram = twgl.createProgramInfo(gl, [texture_vs, texture_fs])
 const waterProgram = twgl.createProgramInfo(gl, [water_vs, water_fs])
 
@@ -243,7 +244,7 @@ const waterUniforms = {
     u_model: waterModelMat,
     u_cubeMap: cubeMap,
     u_cubeEnvMap: cubeMapEnv,
-    u_bottomModelMat: poolModelMat, // adjust
+    u_bottomModelMat: poolModelMat, 
     u_cameraPosition: Vec3.create(), 
 }
 
@@ -281,7 +282,7 @@ function render() {
     twgl.setUniforms(waterProgram, lightUniforms)
     twgl.setUniforms(waterProgram, waterUniforms)
     twgl.setBuffersAndAttributes(gl, waterProgram, waterBufferInfo)
-    twgl.drawBufferInfo(gl, waterBufferInfo, gl.TRIANGLE_STRIP)
+    twgl.drawBufferInfo(gl, waterBufferInfo, gl[heightfieldSimulation.DRAW_MODE])
 
     gl.enable(gl.CULL_FACE);
     gl.cullFace(gl.FRONT);

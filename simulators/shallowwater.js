@@ -3,6 +3,9 @@ import * as Mat4 from '../lib/twgl/m4.js'
 
 
 var u
+var widthX
+var widthZ
+
 
 function initialize(_widthX, _widthZ){
     widthX = _widthX
@@ -19,14 +22,7 @@ function initialize(_widthX, _widthZ){
 }
 
 function update(){
-    for(let i=1; i<widthX-1; i++){
-        for(let j=1; j<widthZ-1; j++){
-            let f = c*c * (u[i+1][j] + u[i-1][j] + u[i][j+1] + u[i][j-1] - 4*u[i][j]) / h*h            
-            v[i][j] = v[i][j] + f*t
-            unew[i][j] = u[i][j] + v[i][j]*t 
-        }    
-    }      
-    return u
+
 }
 
 

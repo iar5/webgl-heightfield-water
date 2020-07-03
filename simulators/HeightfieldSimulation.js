@@ -1,23 +1,25 @@
 import * as Vec3 from '../lib/twgl/v3.js'
 import * as Mat4 from '../lib/twgl/m4.js'
-import { makeUniformGrid, makeTriangleStripIndices } from '../utils.js'
+import { makeUniformGrid, makeTriangleStripIndices } from '../lib/utils.js'
 
 
 export default class HeightfieldSimulation{
 
-    constructor(verticesX, verticesZ, simulation){
-        this.verticesX = verticesX
-        this.verticesZ = verticesZ
+    DRAW_MODE = "TRIANGLE_STRIP"
 
-        this.vertices = makeUniformGrid(verticesX, verticesZ)
-        this.indices = makeTriangleStripIndices(verticesX, verticesZ)
+    constructor(vertCountX, vertCountZ, simulation){
+        this.vertCountX = vertCountX
+        this.vertCountZ = vertCountZ
+
+        this.vertices = makeUniformGrid(this.vertCountX, this.vertCountZ)
+        this.indices = makeTriangleStripIndices(this.vertCountX, this.vertCountZ)
         this.normals = [] 
 
         this._triangles = this._makeTriangles(this.indices) // <VertexId, Array<TriagleId>>
         this._triangleNormals = Array.from({length: this.indices.length}, e => Array(3).fill(0)); // <TriagleId, TriangleNormal>
     
         this._simulation = simulation
-        this._simulation.initialize(this.verticesX, this.verticesZ)
+        this._simulation.initialize(this.vertCountX, this.vertCountZ)
     }
 
     /** 
@@ -49,8 +51,8 @@ export default class HeightfieldSimulation{
     update(){
         let heightmap = this._simulation.update()  
         for(let i=0; i<this.vertices.length/3; i++){
-            let x = i % this.verticesX
-            let y = Math.floor(i/this.verticesX)
+            let x = i % this.vertCountX
+            let y = Math.floor(i/this.vertCountX)
             this.vertices[i*3+1] = heightmap[x][y]
         }
         this._updateTriangleNormals()
