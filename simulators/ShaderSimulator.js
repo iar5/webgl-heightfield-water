@@ -1,11 +1,11 @@
 import * as Vec3 from '../lib/twgl/v3.js'
 import * as Mat4 from '../lib/twgl/m4.js'
-import { makeUniformGrid, makeTriangleStripIndices } from '../lib/utils.js'
+import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from '../lib/utils.js'
 
 
-export default class ShaderSimulation{
+export default class ShaderSimulator{
 
-    DRAW_MODE = "TRIANGLES"
+    DRAW_MODE = "TRIANGLE_STRIP"
 
     constructor(vertCountX, vertCountZ){
         this.vertCountX = vertCountX
@@ -13,7 +13,7 @@ export default class ShaderSimulation{
 
         this.vertices = makeUniformGrid(this.vertCountX, this.vertCountZ)
         this.indices = makeTriangleStripIndices(this.vertCountX, this.vertCountZ)
-        this.normals = [] 
+        this.uv = makeUniformGridUVs(this.vertCountX, this.vertCountZ)
     }
 
     update(){

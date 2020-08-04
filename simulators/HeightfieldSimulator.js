@@ -3,7 +3,7 @@ import * as Mat4 from '../lib/twgl/m4.js'
 import { makeUniformGrid, makeTriangleStripIndices } from '../lib/utils.js'
 
 
-export default class HeightfieldSimulation{
+export default class HeightfieldSimulator{
 
     DRAW_MODE = "TRIANGLE_STRIP"
 

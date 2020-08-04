@@ -1,8 +1,36 @@
-Pool mehrere Rechtecke
-- immer gleicheh texture nehmen, oben sit ja leer
-- nachteil: brauch matrix fünf mal wegen rotation
+Nice to have
+- canvas doppelte size für retina wie bei svg particles?
+- Wasser mit seitenwänden damit färben kann
+- geisrerspalte u
+- parameter: "sauberkeit" bzw klarheit des wassers. abh von länge des refraktierten strahles die farbe dunkler machen
 
-canvas doppelte size für retina wie bei svg particles?
 
-Wasser mit seitenwänden damit färben kann
-geisrerspalte u
+Ablauf
+
+- FBO tex1 daten geben
+/loop
+- FBO tex1 lesen 
+- FBO tex2 schreiben -> fragColor?
+- FBO rendern
+- Wassser FBO als texture einlesen
+- Wasser rendern
+- FBO tex swappen
+- repeat
+/loopend
+
+
+FB schreibt, Textur hat Farbe (zwar komisch positioniert aber immerhin)
+einlesen (testwater) klappt aber iwie noch nicht
+
+
+
+
+Ein vertice hat neben position und indice ein uv für die textur. 
+uv könnte auch über die normierte position abzüglich verschiebung gewonnen werden, 
+so sind uv aber einfacher von jeglichen transformationen unabhängig
+folge für textur und uv die opengl konvention, dass links unten (0;0) liegt
+
+Frambuffer
+1. v berechnen indem u eingelesen
+2. u new berechnen indem u eingelesen
+= 3 FBOs?
