@@ -1,8 +1,0 @@
-
-Framebuffer ist Sammlung aus Attachements
-Attachement kann Texture oder Renderbuffer sein
-Renderbuffer ist ähnlich zu Textur, kann aber nicht als Shader Input genommen werden
-
-With our framebuffer bound, anytime we call gl.clear, gl.drawArrays, or gl.drawElements 
-adjust viewport + aspect to render target before binding
-framebuffer has no depth per default

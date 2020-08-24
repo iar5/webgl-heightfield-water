@@ -1,4 +1,4 @@
-export const test_vs = 
+export const water_test_vs = 
 `
     precision highp float;
 
@@ -8,22 +8,24 @@ export const test_vs =
     uniform sampler2D u_texture;
 
     attribute vec3 a_position;
-    attribute vec2 a_uv;
+    attribute vec2 a_texcoord;
 
     varying vec4 v_color;
 
-    void main() {
-        vec4 texv = texture2D(u_texture, a_uv);
-        v_color = texv;
+    float decode(float value) { return (value-0.5)*2.; }
 
-        vec4 position = u_model * vec4(a_position.x, a_position.y, a_position.z, 1.0);
-        position.y += 0.; //texv.z * 10.; // tex values in 0-1 range?
+    void main() {
+        vec4 tex = texture2D(u_texture, a_texcoord);
+        v_color = tex;
+
+        vec4 position = u_model * vec4(a_position.x, a_position.y, a_position.z, 1.0);        
+        position.y += decode(tex.r);
         
         gl_Position = u_projection * u_view * position; 
     }
 `
 
-export const test_fs = 
+export const water_test_fs = 
 `
     precision highp float;
 

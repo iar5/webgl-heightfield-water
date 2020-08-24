@@ -2,15 +2,12 @@ import * as twgl from './lib/twgl/twgl.js'
 import * as Vec3 from './lib/twgl/v3.js'
 import * as Mat4 from './lib/twgl/m4.js'
 import Stats from './lib/stats.module.js'
-import { texture_vs, texture_fs } from './shader/texture.js'
-import { water_vs, water_fs } from './shader/water.js'
-import { test_vs, test_fs } from './shader/testwater.js'
-import { testinit_vs, testinit_fs } from './shader/testinit.js'
-import { testsim_vs, testsim_fs } from './shader/testsim.js'
+import { texture_vs, texture_fs } from './rendering/texture.js'
+import { water_vs, water_fs } from './rendering/water.js'
+import { water_test_vs, water_test_fs } from './simulators/shader/render.js'
 import { degToRad, createOrbitCamera } from './lib/utils.js'
-import HeightfieldSimulator from './simulators/HeightfieldSimulator.js'
-import ShaderSimulator from './simulators/ShaderSimulator.js'
-import { simulation } from './simulators/simulations/simplewater.js'
+import HeightfieldSimulator from './simulators/js/HeightfieldSimulator.js'
+import ShaderSimulator from './simulators/shader/ShaderSimulator.js'
 
 
 
@@ -31,18 +28,16 @@ document.body.appendChild(stats.dom)
 
 var paused = false
 const canvas = document.getElementById("canvas")
-const gl = canvas.getContext("webgl", {antialias: true})
+const gl = canvas.getContext("experimental-webgl", { antialias: true })
 twgl.resizeCanvasToDisplaySize(gl.canvas)
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 gl.getExtension('OES_element_index_uint') // to use bigger indice arrays, already enabled in chrome but for older versions
-
 gl.enable(gl.BLEND)
 gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 const poolTexProgram = twgl.createProgramInfo(gl, [texture_vs, texture_fs])
-const initProgram = twgl.createProgramInfo(gl, [testinit_vs, testinit_fs])
-const simulationProgram = twgl.createProgramInfo(gl, [testsim_vs, testsim_fs])
-const waterProgram = twgl.createProgramInfo(gl, [test_vs, test_fs])
+//const waterProgram = twgl.createProgramInfo(gl, [water_vs, water_fs])
+const waterProgram = twgl.createProgramInfo(gl, [water_test_vs, water_test_fs])
 
 
 
@@ -235,42 +230,24 @@ const poolUniforms = {
 
 
 
-//////////////////
-//      FBO     //
-//////////////////
-const countX = 80
-const countZ = 80
-
-const fbBufferInfo = twgl.createBufferInfoFromArrays(gl, { 
-    a_position: { numComponents: 2, data: [-1, 1, -1, -1, 1, 1, 1, -1] } // cover clip space
-})
-
-let fb1 = twgl.createFramebufferInfo(gl, undefined, 8, 8);
-let fb2 = twgl.createFramebufferInfo(gl, undefined, 8 , 8);
-if(gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) { console.log("Not working") }
-
-gl.useProgram(initProgram.program);
-twgl.setBuffersAndAttributes(gl, initProgram, fbBufferInfo);
-twgl.setUniforms(initProgram, {u_test: 1.23456})
-twgl.bindFramebufferInfo(gl, fb1);
-twgl.drawBufferInfo(gl, fbBufferInfo, gl.TRIANGLE_STRIP);
-
-
-
 
 //////////////////
 //     WATER    //
 //////////////////
+
+const countX = 128
+const countZ = 128
+
+const simulator = new ShaderSimulator(countX, countZ, gl)
+
 const waterModelMat = Mat4.identity() 
 Mat4.translate(waterModelMat, [0, 0, 0], waterModelMat) 
 Mat4.scale(waterModelMat, [2, 1, 2], waterModelMat)
 
-const simulator = new ShaderSimulator(countX, countZ)
-
 const waterBufferInfo = twgl.createBufferInfoFromArrays(gl, {
     indices: { numComponents: 3, data: Uint32Array.from(simulator.indices) }, // use gl.drawElements() with 32 Bit (waterBufferInfo.elementType is set to gl.UNSIGNED_INT)
     a_position: { numComponents: 3, data: simulator.vertices },
-    a_uv: { numComponents: 2, data: simulator.uv },
+    a_texcoord: { numComponents: 2, data: simulator.uv },
 })
 
 const waterUniforms = { 
@@ -294,9 +271,7 @@ function update(){
     requestAnimationFrame(update)
     stats.begin()
     updateCamera()
-    if(!paused) {
-        simulator.update()
-    }
+    if(!paused) simulator.update(gl)
     render()
     stats.end()
 }
@@ -306,29 +281,17 @@ function updateCamera() {
     Mat4.getTranslation(camera.mat, waterUniforms.u_cameraPosition)
 }
 
-let i = 0
 function render() {
     twgl.resizeCanvasToDisplaySize(gl.canvas)
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-
-    gl.disable(gl.DEPTH_TEST)
-    gl.useProgram(simulationProgram.program) 
-    twgl.setBuffersAndAttributes(gl, simulationProgram, fbBufferInfo)
-    twgl.setUniforms(simulationProgram, {
-        u_framenumber: i, 
-        u_texture: fb1.attachments[0],
-        u_color: [Math.random(), Math.random(), Math.random(), 1]
-    })
-    twgl.bindFramebufferInfo(gl, fb2) 
-    twgl.drawBufferInfo(gl, fbBufferInfo, gl.TRIANGLE_STRIP)
-    gl.enable(gl.DEPTH_TEST)
 
     gl.useProgram(waterProgram.program) 
     twgl.setUniforms(waterProgram, globalUniforms)
     twgl.setUniforms(waterProgram, lightUniforms)
     twgl.setUniforms(waterProgram, waterUniforms)
-    twgl.setUniforms(waterProgram, { u_texture: fb2.attachments[0] })
+    twgl.setUniforms(waterProgram, { u_texture: simulator.fb2.attachments[0] })
     twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_position, simulator.vertices)
+    //twgl.setAttribInfoBufferFromArray(gl, waterBufferInfo.attribs.a_normal, simulator.normals)
     twgl.setBuffersAndAttributes(gl, waterProgram, waterBufferInfo)
     twgl.bindFramebufferInfo(gl, null)
     twgl.drawBufferInfo(gl, waterBufferInfo, gl[simulator.DRAW_MODE])
@@ -343,11 +306,6 @@ function render() {
     twgl.bindFramebufferInfo(gl, null);
     twgl.drawBufferInfo(gl, poolBufferInfo, gl.TRIANGLES) 
     gl.disable(gl.CULL_FACE);
-
-    i++
-    let temp = fb1;
-    fb1 = fb2;
-    fb2 = temp;
 }
 
 window.addEventListener('keydown', e => {

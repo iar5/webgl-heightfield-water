@@ -1,13 +1,14 @@
-import * as Vec3 from '../lib/twgl/v3.js'
-import * as Mat4 from '../lib/twgl/m4.js'
-import { makeUniformGrid, makeTriangleStripIndices } from '../lib/utils.js'
+import * as Vec3 from '../../lib/twgl/v3.js'
+import * as Mat4 from '../../lib/twgl/m4.js'
+import { makeUniformGrid, makeTriangleStripIndices } from '../../lib/utils.js'
+import { simulation } from './simplewater.js'
 
 
 export default class HeightfieldSimulator{
 
     DRAW_MODE = "TRIANGLE_STRIP"
 
-    constructor(vertCountX, vertCountZ, simulation){
+    constructor(vertCountX, vertCountZ){
         this.vertCountX = vertCountX
         this.vertCountZ = vertCountZ
 
@@ -18,7 +19,7 @@ export default class HeightfieldSimulator{
         this._triangles = this._makeTriangles(this.indices) // <VertexId, Array<TriagleId>>
         this._triangleNormals = Array.from({length: this.indices.length}, e => Array(3).fill(0)); // <TriagleId, TriangleNormal>
     
-        this._simulation = simulation
+        this._simulation = new simulation()
         this._simulation.initialize(this.vertCountX, this.vertCountZ)
     }
 
