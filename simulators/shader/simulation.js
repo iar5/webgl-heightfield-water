@@ -28,22 +28,18 @@ export const testsim_fs =
     
     varying vec2 v_texcoord;
 
-    float encode(float value) { return clamp(value, -1., 1.)/2. + 0.5; }
-
-    float decode(float value) { return (value-0.5)*2.; }
-
     float U(int x, int y) {
         vec2 c = v_texcoord + vec2(x, y)*u_stepsize;
         if (c.x<0.||c.x>1.||c.y<0.||c.y>1.) { return 0.; }
         else {
             vec4 tex = texture2D(u_texture, c);
-            return decode(tex.r);
+            return tex.r;
         } 
     }
 
     float V() {
         vec4 tex = texture2D(u_texture, v_texcoord);
-        return decode(tex.g);
+        return tex.g;
     }
 
     void main() {
@@ -56,33 +52,13 @@ export const testsim_fs =
         float v = V() + t*f;
         v *= slowdown;
         float u = U(0,0) + t*v;
-        vec4 result = vec4(encode(u), encode(v), 0, 1);
+        vec4 result = vec4(u, v, 0, 1);
 
    
-        // ab hier test stuff hier // 
-
-        u = (U(0,0)+U(1,0))/2.;
-        u += float(u_frame)*0.0001;
-        result.r = encode(u); 
         gl_FragColor = result;
     }
 `
 // v scheint immer negativ zu sein? warum?
-// kann  negativ sein? also ist das nen gradient oder ist die relativ zur position 
+// kann v negativ sein? also ist das nen gradient oder ist die relativ zur position 
 // stepsize falsch?
-
-/*
-schreibt er in die der er liset?
-das folgende dürfte doch eigentlich nicht an werten verlieren?! amplitude vom berg geht aber imme weiter runter
-u = (U(0,0)+U(1,0))/2.;
-result.r = encode(u); 
-
-u = U(0,0) + float(u_frame)*0.0001;
-warum springt manchmal so?
-
-u = (U(0,0)+U(1,0))/2.;
-u += float(u_frame)*0.0001;
-das selbe hier
-von den werten her passt alles aber das gespringe kp
-*/
-
+// schreibt er in die der er liset?
