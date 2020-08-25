@@ -1,26 +1,30 @@
 import * as Vec3 from '../../lib/twgl/v3.js'
 import * as Mat4 from '../../lib/twgl/m4.js'
-import { makeUniformGrid, makeTriangleStripIndices } from '../../lib/utils.js'
-import { simulation } from './simplewater.js'
+import { simulation } from './water.js'
 
 
 export default class HeightfieldSimulator{
 
-    DRAW_MODE = "TRIANGLE_STRIP"
+    /**
+     * vertices and indices only as triangel strip?!
+     * @param {*} vertCountX 
+     * @param {*} vertCountZ 
+     * @param {*} vertices 
+     * @param {*} indices 
+     */
+    constructor(vertCountX, vertCountZ, vertices, indices){
+        this._vertCountX = vertCountX
+        this._vertCountZ = vertCountZ
 
-    constructor(vertCountX, vertCountZ){
-        this.vertCountX = vertCountX
-        this.vertCountZ = vertCountZ
-
-        this.vertices = makeUniformGrid(this.vertCountX, this.vertCountZ)
-        this.indices = makeTriangleStripIndices(this.vertCountX, this.vertCountZ)
+        this._vertices = vertices
+        this._indices = indices
         this.normals = [] 
 
-        this._triangles = this._makeTriangles(this.indices) // <VertexId, Array<TriagleId>>
-        this._triangleNormals = Array.from({length: this.indices.length}, e => Array(3).fill(0)); // <TriagleId, TriangleNormal>
+        this._triangles = this._makeTriangles(this._indices) // <VertexId, Array<TriagleId>>
+        this._triangleNormals = Array.from({length: this._indices.length}, e => Array(3).fill(0)); // <TriagleId, TriangleNormal>
     
-        this._simulation = new simulation()
-        this._simulation.initialize(this.vertCountX, this.vertCountZ)
+        this._updatefunction = simulation
+        this._updatefunction.initialize(this._vertCountX, this._vertCountZ)
     }
 
     /** 
@@ -31,14 +35,14 @@ export default class HeightfieldSimulator{
         let triangles = []
 
         // fill with empty arrays
-        for(var i=0; i<this.vertices.length/3; i++)
+        for(var i=0; i<this._vertices.length/3; i++)
             triangles.push([])
 
         // push triangle id to vertice id
-        for (let i=0; i<this.indices.length-2; i++) {
-            let vId1 = this.indices[i]
-            let vId2 = this.indices[i+1]
-            let vId3 = this.indices[i+2]
+        for (let i=0; i<this._indices.length-2; i++) {
+            let vId1 = this._indices[i]
+            let vId2 = this._indices[i+1]
+            let vId3 = this._indices[i+2]
 
             if(this._isTriangle(vId1, vId2, vId3)) {
                 triangles[vId1].push(i)
@@ -50,26 +54,26 @@ export default class HeightfieldSimulator{
     }
 
     update(){
-        let heightmap = this._simulation.update()  
-        for(let i=0; i<this.vertices.length/3; i++){
-            let x = i % this.vertCountX
-            let y = Math.floor(i/this.vertCountX)
-            this.vertices[i*3+1] = heightmap[x][y]
+        let heightmap = this._updatefunction.update()  
+        for(let i=0; i<this._vertices.length/3; i++){
+            let x = i % this._vertCountX
+            let y = Math.floor(i/this._vertCountX)
+            this._vertices[i*3+1] = heightmap[x][y]
         }
         this._updateTriangleNormals()
         this._updateVertexNormals()
     }
 
     _updateTriangleNormals(){
-        for(let i=0; i<this.indices.length; i++){
-            let vId1 = this.indices[i]
-            let vId2 = this.indices[i+1]
-            let vId3 = this.indices[i+2]
+        for(let i=0; i<this._indices.length; i++){
+            let vId1 = this._indices[i]
+            let vId2 = this._indices[i+1]
+            let vId3 = this._indices[i+2]
 
             if(this._isTriangle(vId1, vId2, vId3)) {
-                let v1 = [this.vertices[vId1*3], this.vertices[vId1*3+1], this.vertices[vId1*3+2]]
-                let v2 = [this.vertices[vId2*3], this.vertices[vId2*3+1], this.vertices[vId2*3+2]]
-                let v3 = [this.vertices[vId3*3], this.vertices[vId3*3+1], this.vertices[vId3*3+2]]
+                let v1 = [this._vertices[vId1*3], this._vertices[vId1*3+1], this._vertices[vId1*3+2]]
+                let v2 = [this._vertices[vId2*3], this._vertices[vId2*3+1], this._vertices[vId2*3+2]]
+                let v3 = [this._vertices[vId3*3], this._vertices[vId3*3+1], this._vertices[vId3*3+2]]
                     
                 let v21 = Vec3.subtract(v2, v1)
                 let v31 = Vec3.subtract(v3, v1)
@@ -77,7 +81,7 @@ export default class HeightfieldSimulator{
                 
                 // in triangle strip the triangles are not equally arranged in termes of clockwise/counterclockwise 
                 // every second triangle need to get flipped
-                // not sure if my implementation is conventional correct but its uniform and worming
+                // not sure if my implementation is conventional correct but its uniform and working
                 if(i%2==1) Vec3.mulScalar(n, -1, n)
 
                 Vec3.normalize(n, n)
@@ -87,7 +91,7 @@ export default class HeightfieldSimulator{
     }
 
     _updateVertexNormals(){
-        for(let i=0; i<this.vertices.length/3; i++){
+        for(let i=0; i<this._vertices.length/3; i++){
             let adjacentTriangleIds = this._triangles[i]
             let n = Vec3.create()
             

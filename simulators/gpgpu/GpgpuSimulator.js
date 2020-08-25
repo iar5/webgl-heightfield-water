@@ -7,16 +7,10 @@ import { testsim_vs, testsim_fs } from './simulation.js'
 
 export default class ShaderSimulator{
 
-    DRAW_MODE = "TRIANGLE_STRIP"
-
     constructor(vertCountX, vertCountZ, gl){
         this.gl = gl
         this.vertCountX = vertCountX
         this.vertCountZ = vertCountZ
-
-        this.vertices = makeUniformGrid(this.vertCountX, this.vertCountZ)
-        this.indices = makeTriangleStripIndices(this.vertCountX, this.vertCountZ)
-        this.uv = makeUniformGridUVs(this.vertCountX, this.vertCountZ)
 
         this.i = 0
 
@@ -26,12 +20,12 @@ export default class ShaderSimulator{
             a_position: { numComponents: 2, data: [-1, 1, -1, -1, 1, 1, 1, -1] } // cover clip space
         })
         
-        gl.getExtension('OES_texture_float') // adds type: gl.FLOAT to texture, only available in webgl-experimental
-        gl.getExtension('OES_texture_float_linear')
+        gl.getExtension('OES_texture_float') // adds type: gl.FLOAT to texture in webgl-experimental
+        gl.getExtension('OES_texture_float_linear') // adds min/mag: gl.LINEAR to type: gl.FLOAT txtures
         const attachments = [
             { format: gl.RGBA, internalFormat: gl.RGBA, type: gl.FLOAT,  min: gl.LINEAR, mag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE },
             { format: gl.DEPTH_STENCIL },
-          ];
+        ];
         this.fb1 = twgl.createFramebufferInfo(gl, attachments, this.vertCountX, this.vertCountZ);
         this.fb2 = twgl.createFramebufferInfo(gl, attachments, this.vertCountX, this.vertCountZ);
         checkFramebufferStatus(gl)
@@ -61,6 +55,7 @@ export default class ShaderSimulator{
         let temp = this.fb1;
         this.fb1 = this.fb2;
         this.fb2 = temp;
+        this.texture = this.fb2.attachments[0] // to access texture from outsite easily
     }
 }
 

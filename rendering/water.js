@@ -63,7 +63,7 @@ export const water_fs =
         bool aboveWater = u_cameraPosition.y > v_position.y;
         vec3 normal = aboveWater ? v_normal : -v_normal;
         float eta = aboveWater ? 1.0/1.3 : 1.3/1.0;
-        eta = 1.0;
+        //eta = 1.0;
 
         vec3 refractRay = refract(eyeRay, normal, eta);
         float t1 = intersectRayPlane(v_position.xyz-c, refractRay, vec3(0, -1, 0), -h); // top 
