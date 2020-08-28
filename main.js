@@ -3,9 +3,10 @@ import * as Vec3 from './lib/twgl/v3.js'
 import * as Mat4 from './lib/twgl/m4.js'
 import Stats from './lib/stats.module.js'
 import { degToRad } from './lib/utils.js'
-import OrbitCamera from './objects/OrbitCamera.js'
+import OrbitCamera from './lib/OrbitCamera.js'
 import Pool from './objects/Pool.js'
 import Water from './objects/Water.js'
+import Skybox from './objects/Skybox.js'
 
 
 
@@ -24,6 +25,7 @@ gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 const stats = new Stats()
 document.body.appendChild(stats.dom)
 
+const skybox = new Skybox(gl)
 const pool = new Pool(gl)
 const water = new Water(gl)
 
@@ -38,17 +40,17 @@ const projection = Mat4.perspective(fov,  canvas.width/canvas.height, 0.01, 100)
 
 const camera = new OrbitCamera(canvas, Vec3.create(0, -0.1, 4), 25, 0)
 
-const lightUniforms = {
-    ambient: [0.3, 0.3, 0.3],
-    sunColor: [0.8, 0.8, 0.8],
-    sunPosition: [0, 3, 0],
-}
-
 const globalUniforms = {
     u_projection: projection,
     u_view: Mat4.identity(),
     u_cameraPosition: Vec3.create()
 } 
+
+const lightUniforms = {
+    ambient: [0.3, 0.3, 0.3],
+    sunColor: [0.8, 0.8, 0.8],
+    sunPosition: [0, 3, 0],
+}
 
 
 
@@ -68,8 +70,8 @@ function update(){
     Mat4.inverse(camera.mat, globalUniforms.u_view)
     Mat4.getTranslation(camera.mat, globalUniforms.u_cameraPosition)
 
+    skybox.render(gl, globalUniforms, lightUniforms)
     pool.render(gl, globalUniforms, lightUniforms)
-
     if(!paused) water.update(gl)
     water.render(gl, globalUniforms, lightUniforms)
 

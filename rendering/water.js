@@ -91,10 +91,14 @@ export const water_fs =
 
     float fresnel(vec3 incoming, vec3 normal, float eta){
         //float r0 = pow((n1-n2)/(n1+n2), 2.);
-        //float fresnel = r0 + (1.-r0) * pow(1.-(dot(normal, incoming)), 5.);
+        //float fresnel = r0 + (1.-r0) * pow(1.-(dot(normal, incoming)), 5.); // fresnel formular
 
-        float fresnel = mix(0.5, 1.0, pow(1.0 - dot(-incoming, normal), 3.0)); // madebyevan
-        //float fresnel = eta + (1.0 - eta) * pow(max(0.0, 1.0 - dot(-incoming, normal)), 5.0);
+        //float fresnel = mix(0.5, 1.0, pow(1.0 - dot(-incoming, normal), 3.0)); // madebyevan
+        //float fresnel = eta + (1.0 - eta) * pow(max(0.0, 1.0 - dot(-incoming, normal)), 5.0); // git
+
+        float fresnel = dot(incoming, normal);
+        fresnel = pow(fresnel, 2.0);
+        fresnel = max(0.1, fresnel);
         return fresnel;
     }
 
