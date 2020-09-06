@@ -1,12 +1,12 @@
-import * as twgl from '/lib/twgl/twgl.js'
-import * as Vec3 from '/lib/twgl/v3.js'
-import * as Mat4 from '/lib/twgl/m4.js'
-import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from '/lib/utils.js'
-import { water_vs, water_fs } from '/rendering/water.js'
-import { water_test_vs, water_test_fs } from '/rendering/watertest.js'
-import Heightfield from '/simulators/js/Heightfield.js'
-import watersimulator from '/simulators/js/water.js'
-import GpgpuSimulator from '/simulators/gpgpu/GpgpuSimulator.js'
+import * as twgl from './../lib/twgl/twgl.js'
+import * as Vec3 from './../lib/twgl/v3.js'
+import * as Mat4 from './../lib/twgl/m4.js'
+import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from './../lib/utils.js'
+import { water_vs, water_fs } from './../rendering/water.js'
+import { water_test_vs, water_test_fs } from './../rendering/watertest.js'
+import Heightfield from './../simulators/js/Heightfield.js'
+import watersimulator from './../simulators/js/water.js'
+import GpgpuSimulator from './../simulators/gpgpu/GpgpuSimulator.js'
 
 
 /**
