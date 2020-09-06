@@ -1,5 +1,5 @@
-import * as Vec3 from '../../lib/twgl/v3.js'
-import * as Mat4 from '../../lib/twgl/m4.js'
+import * as Vec3 from './../../../lib/twgl/v3.js'
+import * as Mat4 from './../../../lib/twgl/m4.js'
 
 
 const tempVec3 = Vec3.create()

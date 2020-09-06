@@ -1,7 +1,7 @@
-import * as twgl from './../lib/twgl/twgl.js'
-import * as Vec3 from './../lib/twgl/v3.js'
-import * as Mat4 from './../lib/twgl/m4.js'
-import { texture_vs, texture_fs } from './../rendering/texture.js'
+import * as twgl from '../../lib/twgl/twgl.js'
+import * as Vec3 from '../../lib/twgl/v3.js'
+import * as Mat4 from '../../lib/twgl/m4.js'
+import { texture_vs, texture_fs } from '../rendering/texture.js'
 
 export default class Pool{
 

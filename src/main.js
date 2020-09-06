@@ -1,9 +1,9 @@
-import * as dat from './lib/dat.gui.module.js';
-import * as twgl from './lib/twgl/twgl.js'
-import * as Vec3 from './lib/twgl/v3.js'
-import * as Mat4 from './lib/twgl/m4.js'
-import Stats from './lib/stats.module.js'
-import { degToRad } from './lib/utils.js'
+import * as dat from '../lib/dat.gui.module.js';
+import * as twgl from '../lib/twgl/twgl.js'
+import * as Vec3 from '../lib/twgl/v3.js'
+import * as Mat4 from '../lib/twgl/m4.js'
+import Stats from '../lib/stats.module.js'
+import { degToRad } from '../lib/utils.js'
 import OrbitCamera from './objects/OrbitCamera.js'
 import Pool from './objects/Pool.js'
 import Water from './objects/Water.js'

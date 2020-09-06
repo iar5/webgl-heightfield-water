@@ -1,7 +1,7 @@
-import * as twgl from '../../lib/twgl/twgl.js'
-import * as Vec3 from '../../lib/twgl/v3.js'
-import * as Mat4 from '../../lib/twgl/m4.js'
-import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from '../../lib/utils.js'
+import * as twgl from './../../../lib/twgl/twgl.js'
+import * as Vec3 from './../../../lib/twgl/v3.js'
+import * as Mat4 from './../../../lib/twgl/m4.js'
+import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from './../../../lib/utils.js'
 import { init_vs, init_fs } from './init.js'
 import { simulation_vs, simulation_fs } from './simulation.js'
 
