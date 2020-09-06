@@ -4,7 +4,8 @@ import * as Mat4 from '/lib/twgl/m4.js'
 import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from '/lib/utils.js'
 import { water_vs, water_fs } from '/rendering/water.js'
 import { water_test_vs, water_test_fs } from '/rendering/watertest.js'
-import JsSimulator from '/simulators/js/JsSimulator.js'
+import Heightfield from '/simulators/js/Heightfield.js'
+import watersimulator from '/simulators/js/water.js'
 import GpgpuSimulator from '/simulators/gpgpu/GpgpuSimulator.js'
 
 
@@ -36,23 +37,12 @@ export default class Water{
             mag: gl.LINEAR,
             min: gl.LINEAR,
             src: [
-                'assets/env/xpos.jpg',
-                'assets/env/xneg.jpg',
-                'assets/env/ypos.jpg',
-                'assets/env/yneg.jpg', // gibts nicht
-                'assets/env/zpos.jpg',
-                'assets/env/zneg.jpg',
-              ],
-        })
-        const cubeMapTest = twgl.createTexture(gl, {
-            target: gl.TEXTURE_CUBE_MAP,
-            src: [
-                'assets/test/xpos.png',
-                'assets/test/xneg.png',
-                'assets/test/ypos.png',
-                'assets/test/yneg.png', 
-                'assets/test/zpos.png',
-                'assets/test/zneg.png',
+                'assets/skybox/xpos.jpg',
+                'assets/skybox/xneg.jpg',
+                'assets/skybox/ypos.jpg',
+                'assets/skybox/yneg.jpg', 
+                'assets/skybox/zpos.jpg',
+                'assets/skybox/zneg.jpg',
               ],
         })
     
@@ -62,7 +52,7 @@ export default class Water{
         this.indices = makeTriangleStripIndices(this.countX, this.countZ)
         this.uv = makeUniformGridUVs(this.countX, this.countZ)
 
-        this.simulator = new JsSimulator(this.countX, this.countZ, this.vertices, this.indices)
+        this.simulator = new Heightfield(this.countX, this.countZ, this.vertices, this.indices, watersimulator)
         this.programInfo = twgl.createProgramInfo(gl, [water_vs, water_fs])
 
         //this.simulator = new GpgpuSimulator(this.countX, this.countZ, gl)
@@ -103,5 +93,19 @@ export default class Water{
         twgl.setBuffersAndAttributes(gl, this.programInfo, this.bufferInfo)
         twgl.bindFramebufferInfo(gl, null)
         twgl.drawBufferInfo(gl, this.bufferInfo, gl.TRIANGLE_STRIP)
+    }
+
+    /**
+     * 
+     * @param {Number} u x texcoord
+     * @param {Number} v y texcoord
+     * @param {Number} i intensity
+     */
+    drop(u, v, i){
+        if(this.simulator instanceof Heightfield){
+            let x = Math.round(this.countX*u)
+            let y = Math.round(this.countZ*v)
+            watersimulator.drop(x, y, i)
+        }
     }
 }

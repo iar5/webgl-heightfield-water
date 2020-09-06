@@ -2,8 +2,8 @@ import * as twgl from '../../lib/twgl/twgl.js'
 import * as Vec3 from '../../lib/twgl/v3.js'
 import * as Mat4 from '../../lib/twgl/m4.js'
 import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from '../../lib/utils.js'
-import { testinit_vs, testinit_fs } from './init.js'
-import { testsim_vs, testsim_fs } from './simulation.js'
+import { init_vs, init_fs } from './init.js'
+import { simulation_vs, simulation_fs } from './simulation.js'
 
 export default class ShaderSimulator{
 
@@ -14,7 +14,7 @@ export default class ShaderSimulator{
 
         this.i = 0
 
-        this.simulationProgram = twgl.createProgramInfo(gl, [testsim_vs, testsim_fs])
+        this.simulationProgram = twgl.createProgramInfo(gl, [simulation_vs, simulation_fs])
         
         this.fbBufferInfo = twgl.createBufferInfoFromArrays(gl, { 
             a_position: { numComponents: 2, data: [-1, 1, -1, -1, 1, 1, 1, -1] } // cover clip space
@@ -30,7 +30,7 @@ export default class ShaderSimulator{
         this.fb2 = twgl.createFramebufferInfo(gl, attachments, this.vertCountX, this.vertCountZ);
         checkFramebufferStatus(gl)
         
-        let initProgram = twgl.createProgramInfo(gl, [testinit_vs, testinit_fs])
+        let initProgram = twgl.createProgramInfo(gl, [init_vs, init_fs])
         gl.useProgram(initProgram.program);
         twgl.setBuffersAndAttributes(gl, initProgram, this.fbBufferInfo);
         twgl.setUniforms(initProgram, { u_stepsize: [1/this.vertCountX, 1/this.vertCountZ] })

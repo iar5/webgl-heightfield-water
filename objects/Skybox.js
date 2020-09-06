@@ -1,12 +1,37 @@
 import * as twgl from '/lib/twgl/twgl.js'
-import * as primitives from '/lib/twgl/primitives.js'
 import * as Vec3 from '/lib/twgl/v3.js'
 import * as Mat4 from '/lib/twgl/m4.js'
-import { skybox_vs, skybox_fs } from '/rendering/skybox.js'
+
+
+const skybox_vs = `
+    attribute vec3 a_position;
+    
+    varying vec3 v_position;
+
+    void main() {
+        v_position = a_position;
+        gl_Position = vec4(a_position, 1);
+    }
+`
+
+const skybox_fs = `
+    precision highp float;
+
+    uniform samplerCube u_skybox;
+    uniform mat4 u_viewDirectionProjectionInverse;
+
+    varying vec3 v_position;
+
+    void main() {
+        vec4 t = u_viewDirectionProjectionInverse * vec4(v_position, 1);
+        gl_FragColor = textureCube(u_skybox, normalize(t.xyz / t.w));
+    }
+`
 
 const tempMat4 = Mat4.identity()
 
-export default class Enviroment{
+
+export default class Skybox{
 
     constructor(gl){
 
@@ -39,12 +64,12 @@ export default class Enviroment{
             mag: gl.LINEAR,
             min: gl.LINEAR,
             src: [
-                'assets/env/xpos.jpg',
-                'assets/env/xneg.jpg',
-                'assets/env/ypos.jpg',
-                'assets/env/yneg.jpg', // gibts nicht
-                'assets/env/zpos.jpg',
-                'assets/env/zneg.jpg',
+                'assets/skybox/xpos.jpg',
+                'assets/skybox/xneg.jpg',
+                'assets/skybox/ypos.jpg',
+                'assets/skybox/yneg.jpg', 
+                'assets/skybox/zpos.jpg',
+                'assets/skybox/zneg.jpg',
               ],
         })
 

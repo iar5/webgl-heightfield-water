@@ -1,9 +1,10 @@
+import * as dat from './lib/dat.gui.module.js';
 import * as twgl from './lib/twgl/twgl.js'
 import * as Vec3 from './lib/twgl/v3.js'
 import * as Mat4 from './lib/twgl/m4.js'
 import Stats from './lib/stats.module.js'
 import { degToRad } from './lib/utils.js'
-import OrbitCamera from './lib/OrbitCamera.js'
+import OrbitCamera from './objects/OrbitCamera.js'
 import Pool from './objects/Pool.js'
 import Water from './objects/Water.js'
 import Skybox from './objects/Skybox.js'
@@ -70,9 +71,13 @@ function update(){
     Mat4.inverse(camera.mat, globalUniforms.u_view)
     Mat4.getTranslation(camera.mat, globalUniforms.u_cameraPosition)
 
+    if(!paused) {
+        water.update(gl)
+        if(Math.random() > 0.99) water.drop(Math.random(), Math.random(), Math.random()*0.3)
+    }
+
     skybox.render(gl, globalUniforms, lightUniforms)
     pool.render(gl, globalUniforms, lightUniforms)
-    if(!paused) water.update(gl)
     water.render(gl, globalUniforms, lightUniforms)
 
     stats.end()

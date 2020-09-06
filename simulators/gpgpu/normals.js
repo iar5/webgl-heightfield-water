@@ -9,7 +9,7 @@
 
  **/
 
-export const testsim_vs = 
+export const normals_vs = 
 `
     precision highp float;
 
@@ -23,7 +23,7 @@ export const testsim_vs =
     }
 `
 
-export const normals_vs = `
+export const normals_fs = `
 
 uniform sampler2D texture;
 uniform vec2 delta;

@@ -1,4 +1,4 @@
-export const testsim_vs = 
+export const simulation_vs = 
 `
     precision highp float;
 
@@ -12,7 +12,7 @@ export const testsim_vs =
     }
 `
 
-export const testsim_fs = 
+export const simulation_fs = 
 `
     precision highp float;
 

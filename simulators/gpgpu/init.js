@@ -1,4 +1,4 @@
-export const testinit_vs = 
+export const init_vs = 
 `
     precision highp float;
 
@@ -12,7 +12,7 @@ export const testinit_vs =
     }
 `
 
-export const testinit_fs = `
+export const init_fs = `
 precision highp float;
 
 varying vec2 v_texcoord;

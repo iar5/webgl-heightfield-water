@@ -14,7 +14,7 @@ var unew
 var v
 
 /**
- * when 
+ *  
  * @param {Number} verticesXCount 
  * @param {Number} verticesZCount 
  */
@@ -29,7 +29,7 @@ function initialize(x, y){
         for(let j=0; j<verticesZ; j++){
             let x = i-verticesX/2
             let z = j-verticesZ/2
-            let r = 10
+            let r = Math.max(x,y)*0.1
             if(x*x+z*z < r) {
                 u[i][j] = (r-x*x+z*z) * 1/(4*r)  
             }
@@ -39,6 +39,7 @@ function initialize(x, y){
 
 
 /**
+ * 
  * @returns the updated heightfield
  */
 function update(){
@@ -63,14 +64,24 @@ function update(){
     return u
 }
 
+/**
+ * 
+ * @param {Number} x 
+ * @param {Number} y 
+ * @param {Number} intensity 
+ */
+function drop(x, y, intensity){
+    u[x][y] -= intensity
+}
 
 
 /**
  * PUBLIC FUNCTIONS
  */
-export const simulation = (function(){
+export default (function(){
     return {
         initialize,
         update,
+        drop,
     }
 })()
