@@ -1,16 +1,16 @@
 var arr 
-var widthX
-var widthZ
+var vCountX
+var vCountZ
 
 function initialize(_widthX, _widthZ){
-    widthX = _widthX
-    widthZ = _widthZ
-    arr = [...Array(widthX)].map(e => Array(widthZ).fill(0))
+    vCountX = _widthX
+    vCountZ = _widthZ
+    arr = [...Array(vCountX)].map(e => Array(vCountZ).fill(0))
 }
 
 function update(){
-    for(let x=0; x<widthX; x++){
-        for(let z=0; z<widthZ; z++){
+    for(let x=0; x<vCountX; x++){
+        for(let z=0; z<vCountZ; z++){
             arr[x][z] = noise(x*0.01, Date.now()*0.001, z*0.01)
         }
     }
