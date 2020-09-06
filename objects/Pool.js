@@ -16,7 +16,7 @@ export default class Pool{
             src: "assets/tiles.jpg" 
         })
 
-        const s = 14/24 // scale calculated by tiles (want to see 14 of 24 tiles)
+        const s = 12/24 // scale calculated by tiles (e.g. want to see 14 of 24 tiles -> s = 14/24), set u_poolHeight to s
 
         this.modelMat = Mat4.identity()
         Mat4.translate(this.modelMat, [0, s-1, 0], this.modelMat) 

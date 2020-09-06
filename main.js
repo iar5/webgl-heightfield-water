@@ -10,6 +10,13 @@ import Water from './objects/Water.js'
 import Skybox from './objects/Skybox.js'
 
 
+/**
+ * Nice to have
+ * - canvas doppelte size für retina wie bei svg particles?
+ * - Wasser mit seitenwänden damit färben kann
+ * - richtige geisrerspalte u
+ * - parameter: "sauberkeit" bzw klarheit des wassers. abh von länge des refraktierten strahles die farbe dunkler machen
+ */
 
 //////////////////
 //     SETUP    //

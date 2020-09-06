@@ -59,7 +59,7 @@ export default class Water{
         //this.programInfo = twgl.createProgramInfo(gl, [water_test_vs, water_test_fs]) 
 
         this.modelMat = Mat4.identity() 
-        Mat4.translate(this.modelMat, [0, 0, 0], this.modelMat) 
+        Mat4.translate(this.modelMat, [0, -2/24, 0], this.modelMat) 
         Mat4.scale(this.modelMat, [2, 1, 2], this.modelMat)
 
         gl.getExtension('OES_element_index_uint') // to use bigger indice arrays, already enabled in chrome but for older versions
@@ -71,6 +71,7 @@ export default class Water{
         })
 
         this.uniforms = { 
+            u_poolHeight: 12/24,
             u_model: this.modelMat,
             u_cubeMap: cubeMapTiles,
             u_cubeEnvMap: cubeMapEnv,
