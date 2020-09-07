@@ -14,6 +14,9 @@ function update(){
             arr[x][z] = noise(x*0.01, Date.now()*0.001, z*0.01)
         }
     }
+}
+
+function getHeightfield(){
     return arr
 }
 
@@ -25,6 +28,7 @@ export const simulation = (function(){
     return {
         initialize,
         update,
+        getHeightfield
     }
 })()
 

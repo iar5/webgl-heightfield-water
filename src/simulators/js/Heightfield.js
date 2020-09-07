@@ -56,7 +56,9 @@ export default class Heightfield{
     }
 
     update(){
-        let heightmap = this.updatefunction.update()  
+        this.updatefunction.update()
+        let heightmap = this.updatefunction.getHeightfield()
+          
         for(let i=0; i<this._vertices.length/3; i++){
             let x = i % this._vertCountX
             let y = Math.floor(i/this._vertCountX)

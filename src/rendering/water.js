@@ -109,7 +109,6 @@ export const water_fs =
         vec3 eyeRay = normalize(v_position.xyz-u_cameraPosition);
         vec3 normal = aboveWater ? v_normal : -v_normal;
         float eta = aboveWater ? n1/n2 : n2/n1;
-        eta = 1.0;
         vec3 refractRay = refract(eyeRay, normal, eta);        
         vec3 reflectRay = reflect(eyeRay, normal);
 
