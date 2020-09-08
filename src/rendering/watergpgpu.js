@@ -1,4 +1,4 @@
-export const water_test_vs = 
+export const water_gpgpu_vs = 
 `
     precision highp float;
 
@@ -23,7 +23,7 @@ export const water_test_vs =
     }
 `
 
-export const water_test_fs = 
+export const water_gpgpu_fs = 
 `
     precision highp float;
 

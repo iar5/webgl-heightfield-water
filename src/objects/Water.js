@@ -3,9 +3,9 @@ import * as Vec3 from '../../lib/twgl/v3.js'
 import * as Mat4 from '../../lib/twgl/m4.js'
 import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from '../../lib/utils.js'
 import { water_vs, water_fs } from '../rendering/water.js'
-import { water_test_vs, water_test_fs } from '../rendering/watertest.js'
+import { water_gpgpu_vs, water_gpgpu_fs } from '../rendering/watergpgpu.js'
 import Heightfield from './../simulators/js/Heightfield.js'
-import watersimulator from './../simulators/js/water.js'
+import watersimulation from '../simulators/js/simulation.js'
 import GpgpuSimulator from './../simulators/gpgpu/GpgpuSimulator.js'
 
 
@@ -52,11 +52,12 @@ export default class Water{
         this.indices = makeTriangleStripIndices(this.countX, this.countZ)
         this.uv = makeUniformGridUVs(this.countX, this.countZ)
 
-        this.simulator = new Heightfield(this.countX, this.countZ, this.vertices, this.indices, watersimulator)
-        this.programInfo = twgl.createProgramInfo(gl, [water_vs, water_fs])
 
-        //this.simulator = new GpgpuSimulator(this.countX, this.countZ, gl)
-        //this.programInfo = twgl.createProgramInfo(gl, [water_test_vs, water_test_fs]) 
+        //this.simulator = new Heightfield(this.countX, this.countZ, this.vertices, this.indices, watersimulation)
+        //this.programInfo = twgl.createProgramInfo(gl, [water_vs, water_fs])
+
+        this.simulator = new GpgpuSimulator(this.countX, this.countZ, gl)
+        this.programInfo = twgl.createProgramInfo(gl, [water_gpgpu_vs, water_gpgpu_fs]) 
 
         this.modelMat = Mat4.identity() 
         Mat4.translate(this.modelMat, [0, -2/24, 0], this.modelMat) 

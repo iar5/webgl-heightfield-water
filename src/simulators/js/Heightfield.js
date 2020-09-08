@@ -68,6 +68,11 @@ export default class Heightfield{
         this._updateVertexNormals()
     }
 
+
+    /////////////////////////////////
+    // Triangle and normal handliing
+    /////////////////////////////////
+
     _updateTriangleNormals(){
         for(let i=0; i<this._indices.length; i++){
             let vId1 = this._indices[i]

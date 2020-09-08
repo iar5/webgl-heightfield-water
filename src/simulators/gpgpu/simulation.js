@@ -16,21 +16,23 @@ export const simulation_fs =
 `
     precision highp float;
 
-    // adjustable parameters
-    float h = 0.2; // column width
-    float c = 0.3; // wave travel speed <h/t
-    float t = 0.1; // timestep <h/c
-    float slowdown = 0.98;
-
     uniform int u_frame;
     uniform vec2 u_stepsize;
     uniform sampler2D u_texture;
     
     varying vec2 v_texcoord;
 
+    // adjustable parameters
+    float h = 0.2; // column width
+    float c = 0.3; // wave travel speed <h/t
+    float t = 0.1; // timestep <h/c
+    float slowdown = 0.98;
+    
     float U(int x, int y) {
         vec2 c = v_texcoord + vec2(x, y)*u_stepsize;
-        if (c.x<0.||c.x>1.||c.y<0.||c.y>1.) { return 0.; }
+        if (c.x<0.||c.x>1.||c.y<0.||c.y>1.) { 
+            return 0.; 
+        }
         else {
             vec4 tex = texture2D(u_texture, c);
             return tex.r;
@@ -52,13 +54,8 @@ export const simulation_fs =
         float v = V() + t*f;
         v *= slowdown;
         float u = U(0,0) + t*v;
-        vec4 result = vec4(u, v, 0, 1);
+        vec4 result = vec4(u, v, 0, 1); 
 
-   
         gl_FragColor = result;
     }
 `
-// v scheint immer negativ zu sein? warum?
-// kann v negativ sein? also ist das nen gradient oder ist die relativ zur position 
-// stepsize falsch?
-// schreibt er in die der er liset?

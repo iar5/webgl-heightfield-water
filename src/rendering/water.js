@@ -92,6 +92,7 @@ export const water_fs =
 
     float fresnel(vec3 incoming, vec3 normal, float eta){
         // https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/reflection-refraction-fresnel
+        float kr = 0.;
         float cosi = clamp(-1., 1., dot(incoming, normal)); 
         float etai = n1 ;
         float etat = n2; 
@@ -101,7 +102,6 @@ export const water_fs =
         } 
         // Compute sini using Snell's law
         float sint = etai / etat * sqrt(max(0., 1.-cosi * cosi)); 
-        float kr = 0.;
         // Total internal reflection
         if (sint >= 1.) { 
             kr = 1.; 

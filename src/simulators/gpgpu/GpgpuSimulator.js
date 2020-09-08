@@ -2,7 +2,7 @@ import * as twgl from './../../../lib/twgl/twgl.js'
 import * as Vec3 from './../../../lib/twgl/v3.js'
 import * as Mat4 from './../../../lib/twgl/m4.js'
 import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from './../../../lib/utils.js'
-import { init_vs, init_fs } from './init.js'
+import { init_vs, init_fs } from './initialisation.js'
 import { simulation_vs, simulation_fs } from './simulation.js'
 
 export default class ShaderSimulator{
@@ -33,8 +33,7 @@ export default class ShaderSimulator{
         let initProgram = twgl.createProgramInfo(gl, [init_vs, init_fs])
         gl.useProgram(initProgram.program);
         twgl.setBuffersAndAttributes(gl, initProgram, this.fbBufferInfo);
-        twgl.setUniforms(initProgram, { u_stepsize: [1/this.vertCountX, 1/this.vertCountZ] })
-        twgl.bindFramebufferInfo(gl, this.fb1);
+        twgl.bindFramebufferInfo(gl, this.fb1); 
         twgl.drawBufferInfo(gl, this.fbBufferInfo, gl.TRIANGLE_STRIP);
     }
 
