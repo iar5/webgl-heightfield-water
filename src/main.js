@@ -28,7 +28,6 @@ const gl = canvas.getContext("experimental-webgl", { antialias: true })
 twgl.resizeCanvasToDisplaySize(gl.canvas)
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 gl.enable(gl.BLEND)
-gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA)
 
 const stats = new Stats()
 document.body.appendChild(stats.dom)
