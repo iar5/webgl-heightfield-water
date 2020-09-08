@@ -91,17 +91,38 @@ export const water_fs =
     }
 
     float fresnel(vec3 incoming, vec3 normal, float eta){
-        //float r0 = pow((n1-n2)/(n1+n2), 2.);
-        //float fresnel = r0 + (1.-r0) * pow(1.-(dot(normal, incoming)), 5.); // fresnel formular
+        // https://www.scratchapixel.com/lessons/3d-basic-rendering/introduction-to-shading/reflection-refraction-fresnel
+        float cosi = clamp(-1., 1., dot(incoming, normal)); 
+        float etai = n1 ;
+        float etat = n2; 
+        if (cosi > 0.) { 
+            etai = n2;
+            etat = n1;
+        } 
+        // Compute sini using Snell's law
+        float sint = etai / etat * sqrt(max(0., 1.-cosi * cosi)); 
+        float kr = 0.;
+        // Total internal reflection
+        if (sint >= 1.) { 
+            kr = 1.; 
+        } 
+        else { 
+            float cost = sqrt(max(0., 1. - sint * sint)); 
+            cosi = abs(cosi); 
+            float Rs = ((etat * cosi) - (etai * cost)) / ((etat * cosi) + (etai * cost)); 
+            float Rp = ((etai * cosi) - (etat * cost)) / ((etai * cosi) + (etat * cost)); 
+            kr = (Rs * Rs + Rp * Rp) / 2.; 
+        } 
+        return 1.-kr;  
+    }
 
-        //float fresnel = mix(0.5, 1.0, pow(1.0 - dot(-incoming, normal), 3.0)); // madebyevan
-        //float fresnel = eta + (1.0 - eta) * pow(max(0.0, 1.0 - dot(-incoming, normal)), 5.0); // git
-
+    float sfresnel(vec3 incoming, vec3 normal, float eta){
         float fresnel = dot(incoming, normal);
         fresnel = pow(fresnel, 2.0);
         fresnel = max(0.1, fresnel);
         return fresnel;
     }
+
 
     void main() {
         bool aboveWater = u_cameraPosition.y > v_position.y;
@@ -115,7 +136,7 @@ export const water_fs =
         vec4 refractC = intersectScene(reflectRay);
         vec4 reflectC = intersectScene(refractRay);
 
-        float fresnel = (length(refractRay) == 0. ? 0. : fresnel(eyeRay, normal, eta));
+        float fresnel = (length(refractRay) == 0. ? 0. : sfresnel(eyeRay, normal, eta));
         vec4 color = mix(refractC, reflectC, fresnel);
 
         gl_FragColor = color;
