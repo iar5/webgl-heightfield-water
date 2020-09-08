@@ -16,7 +16,6 @@ export const simulation_fs =
 `
     precision highp float;
 
-    uniform int u_frame;
     uniform vec2 u_stepsize;
     uniform sampler2D u_texture;
     

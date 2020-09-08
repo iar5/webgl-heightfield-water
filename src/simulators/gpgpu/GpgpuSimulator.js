@@ -12,8 +12,6 @@ export default class ShaderSimulator{
         this.vertCountX = vertCountX
         this.vertCountZ = vertCountZ
 
-        this.i = 0
-
         this.simulationProgram = twgl.createProgramInfo(gl, [simulation_vs, simulation_fs])
         
         this.fbBufferInfo = twgl.createBufferInfoFromArrays(gl, { 
@@ -42,13 +40,11 @@ export default class ShaderSimulator{
         twgl.setBuffersAndAttributes(gl, this.simulationProgram, this.fbBufferInfo)
         twgl.setUniforms(this.simulationProgram, {
             u_stepsize: [1/this.vertCountX, 1/this.vertCountZ],
-            u_frame: this.i, 
             u_texture: this.fb1.attachments[0],
         })
         twgl.bindFramebufferInfo(gl, this.fb2) // sets viewport
         twgl.drawBufferInfo(gl, this.fbBufferInfo, gl.TRIANGLE_STRIP)
 
-        this.i++
         let temp = this.fb1;
         this.fb1 = this.fb2;
         this.fb2 = temp;
