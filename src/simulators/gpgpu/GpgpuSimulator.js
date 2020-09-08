@@ -38,7 +38,6 @@ export default class ShaderSimulator{
     }
 
     update(gl){
-        gl.disable(gl.DEPTH_TEST)
         gl.useProgram(this.simulationProgram.program) 
         twgl.setBuffersAndAttributes(gl, this.simulationProgram, this.fbBufferInfo)
         twgl.setUniforms(this.simulationProgram, {
@@ -48,7 +47,6 @@ export default class ShaderSimulator{
         })
         twgl.bindFramebufferInfo(gl, this.fb2) // sets viewport
         twgl.drawBufferInfo(gl, this.fbBufferInfo, gl.TRIANGLE_STRIP)
-        gl.enable(gl.DEPTH_TEST)
 
         this.i++
         let temp = this.fb1;
