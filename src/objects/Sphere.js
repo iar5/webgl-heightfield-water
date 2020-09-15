@@ -36,7 +36,7 @@ const sphere_fs = `
  */
 export default class Sphere{
 
-    constructor(gl){
+    constructor(gl, pos=Vec3.create(0,0,0), r=0.2){
 
         this.programInfo = twgl.createProgramInfo(gl, [sphere_vs, sphere_fs])
 
@@ -45,8 +45,6 @@ export default class Sphere{
         twgl.setAttributePrefix("") 
 
         this.modelMat = Mat4.identity()
-        let r = 0.2
-        let pos = Vec3.create(0, -0.6, 0,)
         Mat4.translate(this.modelMat, pos, this.modelMat)
         Mat4.scale(this.modelMat, [r, r, r], this.modelMat)
 

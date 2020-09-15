@@ -18,7 +18,7 @@ export default class Pool{
         const s = 12/24 // height respectively scale calculated by tiles (e.g. want to see 14 of 24 tiles -> s = 14/24), set u_poolHeight to s
 
         this.modelMat = Mat4.identity()
-        Mat4.translate(this.modelMat, [0, s-1, 0], this.modelMat) 
+        Mat4.translate(this.modelMat, [0, 0, 0], this.modelMat) 
         Mat4.scale(this.modelMat, [1, s, 1], this.modelMat)
 
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, {

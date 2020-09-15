@@ -17,7 +17,6 @@ import Sphere from './objects/Sphere.js'
 //     SETUP    //
 //////////////////
 
-var paused = false
 const canvas = document.getElementById("canvas")
 const gl = canvas.getContext("experimental-webgl", { antialias: true })
 twgl.resizeCanvasToDisplaySize(gl.canvas)
@@ -29,8 +28,7 @@ document.body.appendChild(stats.dom)
 const skybox = new Skybox(gl)
 const pool = new Pool(gl)
 const water = new Water(gl)
-
-
+const spehre = new Sphere(gl, Vec3.create(1, 0 ,0))
 
 //////////////////
 // CAMERA, etc..//
@@ -54,6 +52,9 @@ const lightUniforms = {
 
 
 
+var paused = false
+var raining = false
+document.getElementById("rainBtn").onclick = () => raining = !raining
 
 //////////////////
 //   MAIN LOOP  //
@@ -72,7 +73,7 @@ function update(){
 
     if(!paused) {
         water.update(gl)
-        if(Math.random() > 0.99) water.drop(Math.random(), Math.random(), Math.random()*0.3)
+        if(raining && Math.random() > 0.99) water.drop(Math.random(), Math.random(), Math.random()*0.3)
     }
 
     // beware the order of drawing since depthtest is not enabled

@@ -59,9 +59,13 @@ export default class Water{
         //this.programInfo = twgl.createProgramInfo(gl, [water_gpgpu_vs, water_gpgpu_fs]) 
 
         this.modelMat = Mat4.identity() 
-        Mat4.translate(this.modelMat, [0, -2/24, 0], this.modelMat) // wasserstand 
-        //Mat4.translate(this.modelMat, [0, 0, 0], this.modelMat) 
+        Mat4.translate(this.modelMat, [0, 8/24, 0], this.modelMat) // water level 
         Mat4.scale(this.modelMat, [2, 1, 2], this.modelMat)
+
+        let slider = document.getElementById("waterSlider")
+        slider.oninput = () => {
+            Mat4.setTranslation(this.modelMat, [0, slider.value, 0], this.modelMat)
+        }
 
         gl.getExtension('OES_element_index_uint') // to use bigger indice arrays, already enabled in chrome but for older versions
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, {
@@ -71,18 +75,16 @@ export default class Water{
             a_texcoord: { numComponents: 2, data: this.uv },
         })
 
-        // TODO model mat == poolPosition y ist problem
-
         this.uniforms = { 
             u_model: this.modelMat,
             u_cubeEnvMap: cubeMapEnv,
             u_poolCubeMap: cubeMapTiles,
+            // TODO receive values from directly from Pool modelmat 
             u_poolPosition: Vec3.create(0, 0, 0),
-            u_poolHeight: 12/24,
-            u_poolBottom: 1,
+            u_poolHeight: 12/24, // +y distance to c
+            u_poolDepth: 12/24, // -y distance to c
             u_poolHalfWidthX: 1,
             u_poolHalfWidthZ: 1  
-            // distances to center c
         }
     }
 

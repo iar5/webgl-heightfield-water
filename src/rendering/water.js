@@ -45,13 +45,12 @@ export const water_fs =
 
     uniform vec3 u_poolPosition;
     uniform float u_poolHeight;
-    uniform float u_poolBottom;
+    uniform float u_poolDepth;
     uniform float u_poolHalfWidthX;
     uniform float u_poolHalfWidthZ;
-    float ht = (u_poolHeight-12./24.)*2.; // y+
 
     float n1 = 1.0; // air
-    float n2 = 1.0;//3; // water
+    float n2 = 1.3; // water
 
 
     // d ist verschiebung der ebene in richtung n vom nullpunkt
@@ -62,16 +61,16 @@ export const water_fs =
     }  
 
     vec4 intersectScene(vec3 ray){
-        float t1 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, -1, 0), -u_poolBottom); // top 
-        float t2 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, 1, 0), -u_poolBottom); // bottom
+        //float t1 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, -1, 0), -u_poolDepth); // top
+        float t2 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, 1, 0), -u_poolDepth); // bottom
         float t3 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(-1, 0, 0), -u_poolHalfWidthX);
         float t4 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(1, 0, 0), -u_poolHalfWidthX);
         float t5 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, 0, -1), -u_poolHalfWidthZ);
         float t6 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, 0, 1), -u_poolHalfWidthZ);
 
         // get a valid value first, then find the smallest one above 0
-        float t = max(0.0, max(t1, max(t2, max(t3, max(t4, max(t5, t6)))))); 
-        if(t1 > 0.0 && t1 < t) { t = t1; } 
+        float t = max(0.0, max(t2, max(t3, max(t4, max(t5, t6))))); 
+        //if(t1 > 0.0 && t1 < t) { t = t1; } 
         if(t2 > 0.0 && t2 < t) { t = t2; } 
         if(t3 > 0.0 && t3 < t) { t = t3; } 
         if(t4 > 0.0 && t4 < t) { t = t4; } 
@@ -80,12 +79,13 @@ export const water_fs =
 
         vec3 hit = v_position.xyz + t*ray;
 
-        if(hit.y > ht){
+        if(hit.y > u_poolHeight){
             return textureCube(u_cubeEnvMap, ray);
         }
         else{
-            hit -= u_poolPosition; // cube map pos correction
-            vec3 mRay = vec3(hit.x/u_poolHalfWidthX, hit.y/u_poolBottom, hit.z/u_poolHalfWidthZ); // cube map scale correction
+            hit.y -= u_poolDepth; // texture should start at the bottom
+            hit -= u_poolPosition; 
+            vec3 mRay = vec3(hit.x/u_poolHalfWidthX, hit.y, hit.z/u_poolHalfWidthZ); // scale correction
             return textureCube(u_poolCubeMap, mRay);
         }
     }
