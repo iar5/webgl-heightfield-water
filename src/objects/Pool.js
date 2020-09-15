@@ -9,14 +9,13 @@ export default class Pool{
 
         this.programInfo = twgl.createProgramInfo(gl, [texture_vs, texture_fs])
 
-        // this.texture = twgl.createTexture(gl, { src: [255, 0, 0, 255] })
         this.texture = twgl.createTexture(gl, { 
             //mag: gl.LINEAR,
             //min: gl.LINEAR,
             src: "assets/tiles.jpg" 
         })
 
-        const s = 12/24 // scale calculated by tiles (e.g. want to see 14 of 24 tiles -> s = 14/24), set u_poolHeight to s
+        const s = 12/24 // height respectively scale calculated by tiles (e.g. want to see 14 of 24 tiles -> s = 14/24), set u_poolHeight to s
 
         this.modelMat = Mat4.identity()
         Mat4.translate(this.modelMat, [0, s-1, 0], this.modelMat) 
@@ -120,8 +119,8 @@ export default class Pool{
     }
 
     render(gl, globalUniforms, lightUniforms){
-        gl.enable(gl.CULL_FACE);
-        gl.cullFace(gl.FRONT);
+        gl.enable(gl.CULL_FACE); 
+        gl.cullFace(gl.FRONT); // disables rendering for front faced triangles
         gl.useProgram(this.programInfo.program) 
         twgl.setUniforms(this.programInfo, globalUniforms)
         twgl.setUniforms(this.programInfo, lightUniforms)
@@ -129,6 +128,7 @@ export default class Pool{
         twgl.setBuffersAndAttributes(gl, this.programInfo, this.bufferInfo)
         twgl.bindFramebufferInfo(gl, null);
         twgl.drawBufferInfo(gl, this.bufferInfo, gl.TRIANGLES) 
-        gl.disable(gl.CULL_FACE);
+        gl.cullFace(gl.BACK); // default
+        gl.disable(gl.CULL_FACE); // default
     }
 }

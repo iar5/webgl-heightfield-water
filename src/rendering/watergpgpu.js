@@ -1,3 +1,5 @@
+// only for testing gpgpu water
+
 export const water_gpgpu_vs = 
 `
     precision highp float;

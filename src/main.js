@@ -8,15 +8,10 @@ import OrbitCamera from './objects/OrbitCamera.js'
 import Pool from './objects/Pool.js'
 import Water from './objects/Water.js'
 import Skybox from './objects/Skybox.js'
+import Sphere from './objects/Sphere.js'
 
 
-/**
- * Nice to have
- * - canvas doppelte size für retina wie bei svg particles?
- * - Wasser mit seitenwänden damit färben kann
- * - richtige geisrerspalte u
- * - parameter: "sauberkeit" bzw klarheit des wassers. abh von länge des refraktierten strahles die farbe dunkler machen
- */
+
 
 //////////////////
 //     SETUP    //
@@ -27,7 +22,6 @@ const canvas = document.getElementById("canvas")
 const gl = canvas.getContext("experimental-webgl", { antialias: true })
 twgl.resizeCanvasToDisplaySize(gl.canvas)
 gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
-gl.enable(gl.BLEND)
 
 const stats = new Stats()
 document.body.appendChild(stats.dom)
@@ -35,7 +29,6 @@ document.body.appendChild(stats.dom)
 const skybox = new Skybox(gl)
 const pool = new Pool(gl)
 const water = new Water(gl)
-
 
 
 
@@ -82,7 +75,8 @@ function update(){
         if(Math.random() > 0.99) water.drop(Math.random(), Math.random(), Math.random()*0.3)
     }
 
-    skybox.render(gl, globalUniforms, lightUniforms)
+    // beware the order of drawing since depthtest is not enabled
+    skybox.render(gl, globalUniforms, lightUniforms) 
     pool.render(gl, globalUniforms, lightUniforms)
     water.render(gl, globalUniforms, lightUniforms)
 

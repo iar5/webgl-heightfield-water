@@ -5,7 +5,7 @@ import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from '.
 import { init_vs, init_fs } from './initialisation.js'
 import { simulation_vs, simulation_fs } from './simulation.js'
 
-export default class ShaderSimulator{
+export default class GpgpuSimulator{
 
     constructor(vertCountX, vertCountZ, gl){
         this.gl = gl
@@ -18,7 +18,7 @@ export default class ShaderSimulator{
             a_position: { numComponents: 2, data: [-1, 1, -1, -1, 1, 1, 1, -1] } // cover clip space
         })
         
-        gl.getExtension('OES_texture_float') // adds type: gl.FLOAT to texture in webgl-experimental
+        gl.getExtension('OES_texture_float') // adds type: gl.FLOAT to texture 
         gl.getExtension('OES_texture_float_linear') // adds min/mag: gl.LINEAR to type: gl.FLOAT txtures
         const attachments = [
             { format: gl.RGBA, internalFormat: gl.RGBA, type: gl.FLOAT,  min: gl.LINEAR, mag: gl.LINEAR, wrap: gl.CLAMP_TO_EDGE },
@@ -36,14 +36,19 @@ export default class ShaderSimulator{
     }
 
     update(gl){
-    
+        // problem 1: simulation program not working correctly
+        // 
+        // problem 2: bug in combination with mit skybox.render()!
+        // to see the simulation program output properly prevent the skybox.render() statement
+        // initialisation is working 
+        // when checking spector.js debugging panel u_skybox cubemaps have size 1?? 
         gl.useProgram(this.simulationProgram.program) 
         twgl.setBuffersAndAttributes(gl, this.simulationProgram, this.fbBufferInfo)
         twgl.setUniforms(this.simulationProgram, {
             u_stepsize: [1/this.vertCountX, 1/this.vertCountZ],
             u_texture: this.fb1.attachments[0],
         })
-        twgl.bindFramebufferInfo(gl, this.fb2) // sets viewport
+        twgl.bindFramebufferInfo(gl, this.fb2) // (sets viewport)
         twgl.drawBufferInfo(gl, this.fbBufferInfo, gl.TRIANGLE_STRIP)
 
         let temp = this.fb1;

@@ -31,6 +31,9 @@ const skybox_fs = `
 const tempMat4 = Mat4.identity()
 
 
+/**
+ * https://webglfundamentals.org/webgl/lessons/webgl-skybox.html
+ */
 export default class Skybox{
 
     constructor(gl){
@@ -86,8 +89,8 @@ export default class Skybox{
         Mat4.inverse(tempMat4, this.uniforms.u_viewDirectionProjectionInverse);
 
         gl.useProgram(this.programInfo.program)
-        twgl.setBuffersAndAttributes(gl, this.programInfo, this.bufferInfo)
         twgl.setUniforms(this.programInfo, this.uniforms)
+        twgl.setBuffersAndAttributes(gl, this.programInfo, this.bufferInfo)
         twgl.drawBufferInfo(gl, this.bufferInfo, gl.TRIANGLE)
     }
 }

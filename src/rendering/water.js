@@ -39,20 +39,20 @@ export const water_fs =
     varying vec4 v_position;
     varying vec3 v_normal;
 
-    uniform float u_poolHeight; 
     uniform vec3 u_cameraPosition;
-    uniform samplerCube u_cubeMap;
     uniform samplerCube u_cubeEnvMap;
+    uniform samplerCube u_poolCubeMap;
+
+    uniform vec3 u_poolPosition;
+    uniform float u_poolHeight;
+    uniform float u_poolBottom;
+    uniform float u_poolHalfWidthX;
+    uniform float u_poolHalfWidthZ;
+    float ht = (u_poolHeight-12./24.)*2.; // y+
 
     float n1 = 1.0; // air
-    float n2 = 1.3; // water
+    float n2 = 1.0;//3; // water
 
-    // parameters of the underlying pool, fetch them from modelmat?
-    vec3 c = vec3(0, 0, 0); // pool center
-    float w = 1.0; // x -+ distance to c
-    float l = 1.0; // z -+
-    float h = 1.0; // y -
-    float ht = (u_poolHeight-12./24.)*2.; // y+
 
     // d ist verschiebung der ebene in richtung n vom nullpunkt
     // returns scalar t with hit = origin + t*ray
@@ -62,12 +62,12 @@ export const water_fs =
     }  
 
     vec4 intersectScene(vec3 ray){
-        float t1 = intersectRayPlane(v_position.xyz-c, ray, vec3(0, -1, 0), -h); // top 
-        float t2 = intersectRayPlane(v_position.xyz-c, ray, vec3(0, 1, 0), -h); // bottom
-        float t3 = intersectRayPlane(v_position.xyz-c, ray, vec3(-1, 0, 0), -w);
-        float t4 = intersectRayPlane(v_position.xyz-c, ray, vec3(1, 0, 0), -w);
-        float t5 = intersectRayPlane(v_position.xyz-c, ray, vec3(0, 0, -1), -l);
-        float t6 = intersectRayPlane(v_position.xyz-c, ray, vec3(0, 0, 1), -l);
+        float t1 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, -1, 0), -u_poolBottom); // top 
+        float t2 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, 1, 0), -u_poolBottom); // bottom
+        float t3 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(-1, 0, 0), -u_poolHalfWidthX);
+        float t4 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(1, 0, 0), -u_poolHalfWidthX);
+        float t5 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, 0, -1), -u_poolHalfWidthZ);
+        float t6 = intersectRayPlane(v_position.xyz-u_poolPosition, ray, vec3(0, 0, 1), -u_poolHalfWidthZ);
 
         // get a valid value first, then find the smallest one above 0
         float t = max(0.0, max(t1, max(t2, max(t3, max(t4, max(t5, t6)))))); 
@@ -84,9 +84,9 @@ export const water_fs =
             return textureCube(u_cubeEnvMap, ray);
         }
         else{
-            hit -= c; // cube map pos correction
-            vec3 mRay = vec3(hit.x/w, hit.y/h, hit.z/l); // cube map scale correction
-            return textureCube(u_cubeMap, mRay);
+            hit -= u_poolPosition; // cube map pos correction
+            vec3 mRay = vec3(hit.x/u_poolHalfWidthX, hit.y/u_poolBottom, hit.z/u_poolHalfWidthZ); // cube map scale correction
+            return textureCube(u_poolCubeMap, mRay);
         }
     }
 
@@ -163,8 +163,8 @@ export const water_fs =
     // später generisch als struc für alle wande mit position
     // parameterfrom?
     float d = -0.5;
-    float w = 4.0;
-    float l = 4.0;
+    float u_poolHalfWidthX = 4.0;
+    float u_poolHalfWidthZ = 4.0;
     
 
     vec2 getUVFromRectangle(vec2 hit, float rectWidth, float rectHeight){
@@ -215,10 +215,10 @@ export const water_fs =
 
         float t = intersectRayPlane(v_position.xyz, refractRay, v_normal, d);
         vec3 hit = v_position.xyz + t * refractRay;
-        bool intersectBottom = isHitInRectangle(hit.xz, w, l); 
+        bool intersectBottom = isHitInRectangle(hit.xz, u_poolHalfWidthX, u_poolHalfWidthZ); 
 
         if(t > 0.0 && intersectBottom){
-            vec2 uv = getUVFromRectangle(hit.xz, w, l);
+            vec2 uv = getUVFromRectangle(hit.xz, u_poolHalfWidthX, u_poolHalfWidthZ);
             gl_FragColor = texture2D(u_bottomTexture, uv);
         } else {
             gl_FragColor = vec4(v_normal, 1.0);
