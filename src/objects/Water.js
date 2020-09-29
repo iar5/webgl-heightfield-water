@@ -4,13 +4,12 @@ import * as Mat4 from '../../lib/twgl/m4.js'
 import { makeUniformGrid, makeTriangleStripIndices, makeUniformGridUVs } from '../../lib/utils.js'
 import { water_vs, water_fs } from '../rendering/water.js'
 import { water_gpgpu_vs, water_gpgpu_fs } from '../rendering/watergpgpu.js'
-import Heightfield from './../simulators/js/Heightfield.js'
-import watersimulation from '../simulators/js/simulation.js'
-import GpgpuSimulator from './../simulators/gpgpu/GpgpuSimulator.js'
+import JsSimulator from '../simulators/js/JsSimulator.js'
+import GpuSimulator from './../simulators/gpgpu/GpuSimulator.js'
 
 
 /**
- * This water object is able to use the JsSimulator and the GpgpuSimulator aswell.
+ * This water object is able to use the JsSimulator and the GpuSimulator aswell.
  * Since there are only minor differences in the usage of both simulators, this class combines their usage.
  * If you want to switch the simulator, just (un)comment the corresponding simulator and programInfo.
  * There are some attributes and uniforms only used in one simulator but its no problem, if it's registered for the other one aswell.
@@ -52,10 +51,10 @@ export default class Water{
         this.indices = makeTriangleStripIndices(this.countX, this.countZ)
         this.uv = makeUniformGridUVs(this.countX, this.countZ)
 
-        this.simulator = new Heightfield(this.countX, this.countZ, this.vertices, this.indices, watersimulation)
+        this.simulator = new JsSimulator(this.countX, this.countZ, this.vertices, this.indices)
         this.programInfo = twgl.createProgramInfo(gl, [water_vs, water_fs])
 
-        //this.simulator = new GpgpuSimulator(this.countX, this.countZ, gl)
+        //this.simulator = new GpuSimulator(this.countX, this.countZ, gl)
         //this.programInfo = twgl.createProgramInfo(gl, [water_gpgpu_vs, water_gpgpu_fs]) 
 
         this.modelMat = Mat4.identity() 
@@ -79,7 +78,7 @@ export default class Water{
             u_model: this.modelMat,
             u_cubeEnvMap: cubeMapEnv,
             u_poolCubeMap: cubeMapTiles,
-            // TODO receive values from directly from Pool modelmat 
+            // TODO link Pool Modemat
             u_poolPosition: Vec3.create(0, 0, 0),
             u_poolHeight: 12/24, // +y distance to c
             u_poolDepth: 12/24, // -y distance to c
@@ -112,10 +111,10 @@ export default class Water{
      * @param {Number} i intensity
      */
     drop(u, v, i){
-        if(this.simulator instanceof Heightfield){
+        if(this.simulator instanceof JsSimulator){
             let x = Math.round(this.countX*u)
             let y = Math.round(this.countZ*v)
-            watersimulation.drop(x, y, i)
+            this.simulator.simulation.drop(x, y, i)
         }
     }
 }

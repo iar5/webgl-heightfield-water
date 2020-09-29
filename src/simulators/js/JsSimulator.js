@@ -1,10 +1,11 @@
-import * as Vec3 from './../../../lib/twgl/v3.js'
-import * as Mat4 from './../../../lib/twgl/m4.js'
+import * as Vec3 from '../../../lib/twgl/v3.js'
+import * as Mat4 from '../../../lib/twgl/m4.js'
+import simulation from './simulation.js'
 
 
 const tempVec3 = Vec3.create()
 
-export default class Heightfield{
+export default class JsHeightfield{
 
     /**
      * Given vertices and indices only as triangel strip?!
@@ -13,7 +14,7 @@ export default class Heightfield{
      * @param {*} vertices 
      * @param {*} indices 
      */
-    constructor(vertCountX, vertCountZ, vertices, indices, updatefunction){
+    constructor(vertCountX, vertCountZ, vertices, indices){
         this._vertCountX = vertCountX
         this._vertCountZ = vertCountZ
 
@@ -24,8 +25,8 @@ export default class Heightfield{
         this._vertexTriangles = this._makeTriangles(this._indices) // <VertexId, Array<TriagleId>>
         this._triangleNormals = Array.from({length: this._indices.length}, e => Array(3).fill(0)); // <TriagleId, TriangleNormal>
     
-        this.updatefunction = updatefunction
-        this.updatefunction.initialize(this._vertCountX, this._vertCountZ)
+        this.simulation = simulation
+        this.simulation.initialize(this._vertCountX, this._vertCountZ)
     }
 
     /** 
@@ -56,8 +57,8 @@ export default class Heightfield{
     }
 
     update(){
-        this.updatefunction.update()
-        let heightmap = this.updatefunction.getHeightfield()
+        this.simulation.update()
+        let heightmap = this.simulation.getHeightfield()
           
         for(let i=0; i<this._vertices.length/3; i++){
             let x = i % this._vertCountX

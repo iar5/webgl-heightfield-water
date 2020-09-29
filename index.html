@@ -1,16 +1,19 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>water simulation</title>
+    <title>Heightfield Water Simulation</title>
 </head>
 <body>
     <canvas id="canvas"></canvas>
     <div id="gui">
-        <p>water level</p>
-        <input id="waterSlider" type="range" min=-1 max=1 step=0.01>
+        <h1>Heightfield Water Simulation</h1>
+        <br>
+        <label>water level
+        <input id="waterSlider" type="range" min=-0.49 max=0.5 step=0.01>
+        </label>
         <br><br>
-        <p>toggle rain</p>
-        <input id="rainBtn" type="button" value="click">
+        <input id="rainBtn" type="button" value="toggle rain">
+        <input id="collideBtn" type="button" value="toggle collider">
     </div>
 </body>
 
@@ -33,12 +36,21 @@
         right: 0;
         border: 1px solid white;
         background-color: rgba(255, 255, 255, 0.164);
-        border-radius: 4px;
     }
     input[type=button]{
         border: 1px solid white;
+        padding: 2px;
+        border-radius: 0;
         width: 100%;
-        background-color: rgba(255, 255, 255, 0.4);
+        background-color: rgba(46, 46, 46, 0.3);
+        margin-bottom: 2px;
+    }
+    h1{
+        font-size: 1em;
+    }
+    input[type=range]{
+        width: 60%;
+        vertical-align: middle;
     }
 </style>
 

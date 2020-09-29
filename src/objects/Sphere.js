@@ -32,7 +32,7 @@ const sphere_fs = `
     }
 `
 /**
- * TODO add depth test to scne (fix problem with skybox)
+ * TODO add depth test to scene (fix problem with skybox)
  */
 export default class Sphere{
 

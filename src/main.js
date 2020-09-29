@@ -9,6 +9,7 @@ import Pool from './objects/Pool.js'
 import Water from './objects/Water.js'
 import Skybox from './objects/Skybox.js'
 import Sphere from './objects/Sphere.js'
+import simulation from './simulators/js/simulation.js';
 
 
 
@@ -55,6 +56,8 @@ const lightUniforms = {
 var paused = false
 var raining = false
 document.getElementById("rainBtn").onclick = () => raining = !raining
+document.getElementById("collideBtn").onclick = () => water.simulator.simulation.toggleCollisionSphere()
+
 
 //////////////////
 //   MAIN LOOP  //
@@ -65,6 +68,9 @@ function update(){
     requestAnimationFrame(update)
     stats.begin()
 
+    //gl.enable(gl.DEPTH_TEST);
+    //gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    
     twgl.resizeCanvasToDisplaySize(gl.canvas)
     gl.viewport(0, 0, gl.canvas.width, gl.canvas.height)
 
@@ -73,10 +79,10 @@ function update(){
 
     if(!paused) {
         water.update(gl)
-        if(raining && Math.random() > 0.99) water.drop(Math.random(), Math.random(), Math.random()*0.3)
+        if(raining && Math.random() > 0.9) water.drop(Math.random(), Math.random(), Math.random()*0.3)
     }
 
-    // beware the order of drawing since depthtest is not enabled
+    // beware the render order because depthtest is not enabled
     skybox.render(gl, globalUniforms, lightUniforms) 
     pool.render(gl, globalUniforms, lightUniforms)
     water.render(gl, globalUniforms, lightUniforms)

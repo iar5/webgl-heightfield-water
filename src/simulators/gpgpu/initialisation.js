@@ -26,6 +26,7 @@ void main() {
     
 	vec4 result =  vec4(0, 0, 0, 1); 
     result.r = (x*x + y*y < r ? (r-(x*x+y*y))/r : 0.);
+    //result.r = (x*x + y*y < r*r ? (r-abs(x) + r-abs(y))*5. : 0.);
 
 	gl_FragColor = result;
 }`;

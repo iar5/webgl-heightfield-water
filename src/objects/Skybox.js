@@ -32,7 +32,7 @@ const tempMat4 = Mat4.identity()
 
 
 /**
- * https://webglfundamentals.org/webgl/lessons/webgl-skybox.html
+ * code from https://webglfundamentals.org/webgl/lessons/webgl-skybox.html
  */
 export default class Skybox{
 

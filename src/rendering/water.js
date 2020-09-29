@@ -146,8 +146,7 @@ export const water_fs =
 
 
 /**
-
-// old version with pool wall rectangle hit and textur instead of cubemap
+// below: old version with pool wall rectangle hit and textur instead of cubemap
  
 export const water_fs = 
 `
