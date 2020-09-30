@@ -1,6 +1,9 @@
 # webgl-heightfield-water
 
-## Starten der Anwendung
+## Live Demo
+https://iar5.github.io/webgl-heightfield-water/
+
+## Lokales Starten der Anwendung
 
 Das Starten der Anwendung erfordert einen lokalen Webserver. Mit npm kann der http-server verwendet werden:
 
