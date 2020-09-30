@@ -1,22 +1,28 @@
 # webgl-heightfield-water
 
-## Anwendung starten
+## Starten der Anwendung
+
+Das Starten der Anwendung erfordert einen lokalen Webserver. Mit npm kann der http-server verwendet werden:
+
+```
+npm install http-server -g
+http-server
+```
 
 ## Wechsel zwischen CPU/GPU Berechnung der Simulation
-- (um fehler zu vermeiden) in src/main.js skybox.render() ausmachen 
-- in src/objects/Water.js togglen
-- es wird rnder/watergpu.js verwendet für bessere fehlererkennungn
 
-## Fehler
+In src/objects/Water.js müssen folgende Zeile entkommentiert werden und die anderen entsprechend auskommentiert werden:
 
-### Bei der GPU Implementierung
+- für CPU: Zeile 54 und 55
+- für GPU: Zeile 57 und 58
 
-- simulation calculations not working
-- sehr buggy in combination with skymap.render() (comment this statement in main.js when using gpgpu)
-- mit depthtest+depth bit clear wird initial gsetzte textur nach 1. sim step annuliert
+## Fehler bei der GPU Implementierung
 
+- Berechnungen sind fehlerhaft
+- Wechselwirkung mit skymap.render() in src/main.js. Wird dieses Statement auskommentiert, Verhält sich die Simulation anders (weniger verbuggt)
+- Wird der depthtest aktiviert, wird die initiale GPGPU Textur annuliert
 
+## Nächste Schritte
 
-Nächste Schritte
-- Nochmal mit einfach nachvollziehbare Simulations testen
-- Bestehendes GPGPU Example aus Internet raussuchen und hier intergrieren zum Testen
+- Erneut mit einem einfachen, besser nachvollziehbare Code im GPGPU Programm testen
+- Bestehendes GPGPU Beispiele aus Internet raussuchen und in in dieses Projekt intergrieren und schauen, was diese anders machen.
