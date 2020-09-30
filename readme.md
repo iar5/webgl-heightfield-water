@@ -5,6 +5,7 @@
 ## Wechsel zwischen CPU/GPU Berechnung der Simulation
 - (um fehler zu vermeiden) in src/main.js skybox.render() ausmachen 
 - in src/objects/Water.js togglen
+- es wird rnder/watergpu.js verwendet für bessere fehlererkennungn
 
 ## Fehler
 
@@ -13,6 +14,7 @@
 - simulation calculations not working
 - sehr buggy in combination with skymap.render() (comment this statement in main.js when using gpgpu)
 - mit depthtest+depth bit clear wird initial gsetzte textur nach 1. sim step annuliert
+
 
 
 Nächste Schritte

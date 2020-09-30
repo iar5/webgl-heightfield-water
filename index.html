@@ -8,9 +8,9 @@
     <div id="gui">
         <h1>Heightfield Water Simulation</h1>
         <br>
-        <label>water level
-        <input id="waterSlider" type="range" min=-0.49 max=0.5 step=0.01>
-        </label>
+        <label>water level<input id="waterSlider" type="range" min=-0.49 max=0.5 step=0.01></label>
+        <br>
+        <label>water ior<input id="etaNumber" type="number" min=0 max=2 step=0.01 value="1.3"></label>
         <br><br>
         <input id="rainBtn" type="button" value="toggle rain">
         <input id="collideBtn" type="button" value="toggle collider">
@@ -27,6 +27,9 @@
     html, body, canvas{
         width: 100%;
         height: 100%;
+    }
+    h1{
+        font-size: 1em;
     }
     #gui{
         margin: 2px;
@@ -45,12 +48,14 @@
         background-color: rgba(46, 46, 46, 0.3);
         margin-bottom: 2px;
     }
-    h1{
-        font-size: 1em;
-    }
     input[type=range]{
         width: 60%;
         vertical-align: middle;
+        margin-left: 5px;
+    }
+    input[type=number]{
+        color: black;
+        margin-left: 20px;
     }
 </style>
 

@@ -66,6 +66,11 @@ export default class Water{
             Mat4.setTranslation(this.modelMat, [0, slider.value, 0], this.modelMat)
         }
 
+        let etaInput = document.getElementById("etaNumber")
+        etaInput.oninput = () => {
+            this.uniforms.u_etaWater = etaInput.value
+        }
+
         gl.getExtension('OES_element_index_uint') // to use bigger indice arrays, already enabled in chrome but for older versions
         this.bufferInfo = twgl.createBufferInfoFromArrays(gl, {
             indices: { numComponents: 3, data: Uint32Array.from(this.indices) }, // use gl.drawElements() with 32 Bit (bufferInfo.elementType is set to gl.UNSIGNED_INT)
@@ -74,6 +79,7 @@ export default class Water{
             a_texcoord: { numComponents: 2, data: this.uv },
         })
 
+        
         this.uniforms = { 
             u_model: this.modelMat,
             u_cubeEnvMap: cubeMapEnv,
@@ -83,7 +89,8 @@ export default class Water{
             u_poolHeight: 12/24, // +y distance to c
             u_poolDepth: 12/24, // -y distance to c
             u_poolHalfWidthX: 1,
-            u_poolHalfWidthZ: 1  
+            u_poolHalfWidthZ: 1 ,
+            u_etaWater: 1.3 
         }
     }
 

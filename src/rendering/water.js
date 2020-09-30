@@ -48,9 +48,12 @@ export const water_fs =
     uniform float u_poolDepth;
     uniform float u_poolHalfWidthX;
     uniform float u_poolHalfWidthZ;
+    uniform float u_etaWater;
 
     float n1 = 1.0; // air
-    float n2 = 1.3; // water
+    float n2 = u_etaWater; // 1.3; // water
+
+    
 
 
     // d ist verschiebung der ebene in richtung n vom nullpunkt
@@ -124,7 +127,7 @@ export const water_fs =
     }
 
 
-    void main() {
+    void main() {        
         bool aboveWater = u_cameraPosition.y > v_position.y;
 
         vec3 eyeRay = normalize(v_position.xyz-u_cameraPosition);
