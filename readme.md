@@ -14,7 +14,7 @@ http-server
 
 ## Wechsel zwischen CPU/GPU Berechnung der Simulation
 
-In src/objects/Water.js müssen folgende Zeile entkommentiert werden und die anderen entsprechend auskommentiert werden:
+In src/objects/Water.js müssen folgende Zeile ent- und die anderen entsprechend auskommentiert werden:
 
 - für CPU: Zeile 54 und 55
 - für GPU: Zeile 57 und 58
