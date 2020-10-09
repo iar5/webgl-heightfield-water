@@ -1,5 +1,7 @@
 # webgl-heightfield-water
 
+Ausbreitung und Berechnung Wellen und Rendering einer Wasseroberfläche mit begrenzter Domain. Inspririert von Even Wallace\`s WebGL Water.
+
 ## Live Demo
 https://iar5.github.io/webgl-heightfield-water/
 
